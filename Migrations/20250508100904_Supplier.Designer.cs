@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PrescribingSystem.Data;
 
@@ -11,9 +12,11 @@ using PrescribingSystem.Data;
 namespace PrescribingSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250508100904_Supplier")]
+    partial class Supplier
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -364,49 +367,6 @@ namespace PrescribingSystem.Migrations
                     b.ToTable("DorsageForm");
                 });
 
-            modelBuilder.Entity("PrescribingSystem.Models.Medication", b =>
-                {
-                    b.Property<int>("MedicationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationId"));
-
-                    b.Property<decimal>("CurrentSalesPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("DorsageFormId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("QuantityOnHand")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReOrderLevel")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Schedule")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Status")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("int");
-
-                    b.HasKey("MedicationId");
-
-                    b.HasIndex("DorsageFormId");
-
-                    b.HasIndex("SupplierId");
-
-                    b.ToTable("Medication");
-                });
-
             modelBuilder.Entity("PrescribingSystem.Models.Pharmacist", b =>
                 {
                     b.Property<int>("PharmacistId")
@@ -584,25 +544,6 @@ namespace PrescribingSystem.Migrations
                     b.Navigation("ActiveIngredients");
 
                     b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("PrescribingSystem.Models.Medication", b =>
-                {
-                    b.HasOne("PrescribingSystem.Models.DorsageForm", "DorsageForm")
-                        .WithMany()
-                        .HasForeignKey("DorsageFormId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PrescribingSystem.Models.Supplier", "Supplier")
-                        .WithMany()
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DorsageForm");
-
-                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("PrescribingSystem.Models.Pharmacy", b =>

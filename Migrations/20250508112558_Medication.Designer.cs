@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PrescribingSystem.Data;
 
@@ -11,9 +12,11 @@ using PrescribingSystem.Data;
 namespace PrescribingSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250508112558_Medication")]
+    partial class Medication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -375,7 +378,7 @@ namespace PrescribingSystem.Migrations
                     b.Property<decimal>("CurrentSalesPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("DorsageFormId")
+                    b.Property<int>("DosageFormId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -400,7 +403,7 @@ namespace PrescribingSystem.Migrations
 
                     b.HasKey("MedicationId");
 
-                    b.HasIndex("DorsageFormId");
+                    b.HasIndex("DosageFormId");
 
                     b.HasIndex("SupplierId");
 
@@ -590,7 +593,7 @@ namespace PrescribingSystem.Migrations
                 {
                     b.HasOne("PrescribingSystem.Models.DorsageForm", "DorsageForm")
                         .WithMany()
-                        .HasForeignKey("DorsageFormId")
+                        .HasForeignKey("DosageFormId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

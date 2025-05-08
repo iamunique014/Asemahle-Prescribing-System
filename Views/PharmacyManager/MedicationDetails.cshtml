@@ -1,0 +1,36 @@
+﻿@model PrescribingSystem.Models.Medication
+
+@{
+    ViewData["Title"] = "Medication Details";
+}
+
+<h2>Medication Details</h2>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Name</dt>
+        <dd class="col-sm-10">@Model.Name</dd>
+
+        <dt class="col-sm-2">Schedule</dt>
+        <dd class="col-sm-10">@Model.Schedule</dd>
+
+        <dt class="col-sm-2">Dosage Form</dt>
+        <dd class="col-sm-10">@Model.DorsageForm.DorsageFormName</dd>
+
+        <dt class="col-sm-2">Current Sales Price</dt>
+        <dd class="col-sm-10">@Model.CurrentSalesPrice</dd>
+
+        <dt class="col-sm-2">Supplier</dt>
+        <dd class="col-sm-10">@Model.Supplier.SupplierName</dd>
+
+        <dt class="col-sm-2">Re-order Level</dt>
+        <dd class="col-sm-10">@Model.ReOrderLevel</dd>
+
+        <dt class="col-sm-2">Quantity On Hand</dt>
+        <dd class="col-sm-10">@Model.QuantityOnHand</dd>
+
+        <dt class="col-sm-2">Status</dt>
+        <dd class="col-sm-10">@(Model.Status ? "Active" : "Inactive")</dd>
+    </dl>
+</div>
+<a asp-action="IndexMedication" class="btn btn-secondary">Back</a>

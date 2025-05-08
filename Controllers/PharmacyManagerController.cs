@@ -975,10 +975,298 @@ namespace PrescribingSystem.Controllers
 
             return View(pharmacy);
         }
+        // GET: MedicationSuppliers
+        public async Task<IActionResult> IndexSupplier()
+        {
+            return View(await _context.Supplier.ToListAsync());
+        }
 
-      
+        // GET: MedicationSuppliers/Create
+        public IActionResult AddSupplier()
+        {
+            return View();
+        }
+
+        // POST: MedicationSuppliers/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddSupplier([Bind("SupplierName,ContactPerson,Email")] Supplier medicationSupplier)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(medicationSupplier);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(medicationSupplier);
+        }
+
+        // GET: MedicationSuppliers/Edit/5
+        public async Task<IActionResult> SupplierEdit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var medicationSupplier = await _context.Supplier.FindAsync(id);
+            if (medicationSupplier == null)
+            {
+                return NotFound();
+            }
+            return View(medicationSupplier);
+        }
+
+        // POST: MedicationSuppliers/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SupplierEdit(int id, [Bind("SupplierId,SupplierName,ContactPerson,Email")] Supplier medicationSupplier)
+        {
+            if (id != medicationSupplier.SupplierId)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(medicationSupplier);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!SupplierExists(medicationSupplier.SupplierId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(medicationSupplier);
+        }
+        // GET: MedicationSupplier/Details/5
+        public async Task<IActionResult> SupplierDetails(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var supplier = await _context.Supplier
+                .FirstOrDefaultAsync(m => m.SupplierId == id);
+
+            if (supplier == null)
+            {
+                return NotFound();
+            }
+
+            return View(supplier);
+        }
+
+        // GET: MedicationSuppliers/Delete/5
+        public async Task<IActionResult> DeleteSupplier(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var medicationSupplier = await _context.Supplier
+                .FirstOrDefaultAsync(m => m.SupplierId == id);
+            if (medicationSupplier == null)
+            {
+                return NotFound();
+            }
+
+            return View(medicationSupplier);
+        }
+
+        // POST: MedicationSuppliers/Delete/5
+        [HttpPost, ActionName("DeleteSupplier")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SupplierDeleteConfirmed(int id)
+        {
+            var medicationSupplier = await _context.Supplier.FindAsync(id);
+            _context.Supplier.Remove(medicationSupplier);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Medication/Create
+        public IActionResult AddMedication()
+        {
+            // Populate dropdowns using ViewBag
+            ViewBag.DosageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName");
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName");
+            // Populate the Dosage Form dropdown with values from the database
+            //ViewBag.DosageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName");
+
+            //// Populate the Supplier dropdown with values from the database
+            //ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName");
+
+            return View();
+        }
+
+        // POST: Medication/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMedication(MedicationViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var medication = new Medication
+                {
+                    Name = model.Name,
+                    Schedule = model.Schedule,
+                    DorsageFormId = model.DorsageFormId,
+                    CurrentSalesPrice = model.CurrentSalesPrice,
+                    SupplierId = model.SupplierId,
+                    ReOrderLevel = model.ReOrderLevel,
+                    QuantityOnHand = model.QuantityOnHand,
+                    Status = model.Status
+                };
+
+                _context.Add(medication);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("IndexMedication");
+            }
+
+            // Repopulate ViewBag dropdowns on validation error
+            ViewBag.DosageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", model.DorsageFormId);
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", model.SupplierId);
+
+            return View(model);
+            // Repopulate dropdowns if validation fails
+            //model.DosageForms = _context.DorsageForm
+            //    .Select(d => new SelectListItem
+            //    {
+            //        Value = d.DorsageFormId.ToString(),
+            //        Text = d.DorsageFormName
+            //    }).ToList();
+
+            //model.Suppliers = _context.Supplier
+            //    .Select(s => new SelectListItem
+            //    {
+            //        Value = s.SupplierId.ToString(),
+            //        Text = s.SupplierName
+            //    }).ToList();
+
+            //return View(model);
+            //if (ModelState.IsValid)
+            //{
+            //    // Add the new medication to the database
+            //    _context.Add(medication);
+            //    await _context.SaveChangesAsync();
+
+            //    // Redirect to the list of medications
+            //    return RedirectToAction("IndexMedication");
+            //}
+
+            //// Repopulate dropdown lists in case of a validation failure
+            //ViewBag.DosageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", medication.DorsageFormId);
+            //ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", medication.SupplierId);
+
+            //return View(medication);
+
+        }
+
+        // GET: Medication/Index
+        public async Task<IActionResult> IndexMedication()
+        {
+            //return View(await _context.Medication.ToListAsync());
+            var medications = await _context.Medication
+        .Include(m => m.DorsageForm)
+        .Include(m => m.Supplier)
+        .ToListAsync();
+
+            return View(medications);
+        }
+
+        // GET: Medication/Edit/5
+        public async Task<IActionResult> EditMedication(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var medication = await _context.Medication.FindAsync(id);
+            if (medication == null) return NotFound();
+
+            ViewData["DorsageFormId"] = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", medication.DorsageFormId);
+            ViewData["SupplierId"] = new SelectList(_context.Supplier, "SupplierId", "SupplierName", medication.SupplierId);
+            return View(medication);
+        }
 
 
+        // POST: Medication/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditMedication(int id, Medication medication)
+        {
+            if (id != medication.MedicationId) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                _context.Update(medication);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["DorsageFormId"] = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", medication.DorsageFormId);
+            ViewData["SupplierId"] = new SelectList(_context.Supplier, "SupplierId", "SupplierName", medication.SupplierId);
+            return View(medication);
+        }
+
+        // GET: Medication/Details/5
+        public async Task<IActionResult> MedicationDetails(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var medication = await _context.Medication
+                .Include(m => m.DorsageFormId)
+                .Include(m => m.SupplierId)
+                .FirstOrDefaultAsync(m => m.MedicationId == id);
+
+            if (medication == null) return NotFound();
+
+            return View(medication);
+        }
+
+        // GET: Medication/Delete/5
+        public async Task<IActionResult> DeleteMedication(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var medication = await _context.Medication
+                .Include(m => m.DorsageFormId)
+                .Include(m => m.SupplierId)
+                .FirstOrDefaultAsync(m => m.MedicationId == id);
+
+            if (medication == null) return NotFound();
+
+            return View(medication);
+        }
+
+        // POST: Medication/Delete/5
+        [HttpPost, ActionName("DeleteMedication")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MedicationDeleteConfirmed(int id)
+        {
+            var medication = await _context.Medication.FindAsync(id);
+            _context.Medication.Remove(medication);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("IndexMedication");
+        }
+        private bool MedicationExists(int id)
+        {
+            return _context.Medication.Any(e => e.MedicationId == id);
+        }
+        private bool SupplierExists(int id)
+        {
+            return _context.Supplier.Any(e => e.SupplierId == id);
+        }
         private bool PharmacistExists(int id)
         {
             return _context.Pharmacist.Any(e => e.PharmacistId == id);

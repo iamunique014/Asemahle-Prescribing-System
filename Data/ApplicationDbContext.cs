@@ -17,6 +17,8 @@ namespace PrescribingSystem.Data
         public DbSet<CustomerAllergy> CustomerAllergy { get; set; }
         public DbSet<Pharmacy> Pharmacy { get; set; }
         public DbSet<Pharmacist> Pharmacist { get; set; }
+        public DbSet<Supplier> Supplier { get; set; }
+        public DbSet<Medication> Medication { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

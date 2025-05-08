@@ -137,12 +137,24 @@
                         </a>
                     </li>
                     <li>
+                        <a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="IndexSupplier">
+                            <i class="fas fa-handshake"></i> Medication Supplier
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="IndexMedication">
+                            <i class="fas fa-handshake"></i> Medication
+                        </a>
+                    </li>
+
+                    <li>
                         <a class="nav-link text-white" asp-area="Identity" asp-page="/Account/Logout">
                             <i class="fas fa-sign-out-alt icon"></i><span class="text nav-text">Logout</span>
                         </a>
                     </li>
                     
-
+                    
+                    
                     @* 
                     <li><a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="ExportDoctorsToExcel">Download Excel</a></li>
                     <li><a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="ExportDoctorsToPdf">Download PDF</a></li>
