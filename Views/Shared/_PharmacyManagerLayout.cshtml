@@ -1,0 +1,252 @@
+﻿@model IEnumerable<PrescribingSystem.Models.Doctor>
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+
+    <!-- External Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" />
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif&display=swap" rel="stylesheet" />
+
+    <!-- Custom Styles -->
+    <link href="~/css/customerlayout.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Roboto Serif', serif;
+            margin: 0;
+            background-color: #f4f8fb;
+            color: #333;
+        }
+
+        nav.sidebar {
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #004080;
+            color: white;
+            padding-top: 20px;
+        }
+
+        .sidebar .image-text .name {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .sidebar .image img {
+            width: 50px;
+        }
+
+        .menu-links li a {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+        }
+
+            .menu-links li a:hover,
+            .menu-links li a.active {
+                background-color: #0066cc;
+            }
+
+        .menu-links li i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .panel-item {
+            background-color: white;
+            color: #333;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <header>
+            <div class="image-text">
+                <span class="image">
+                    <img src="~/css/preview.png" alt="Logo" />
+                </span>
+                <div class="text header-text">
+                    <span class="name">Ibhayi Pharmacy</span>
+                </div>
+            </div>
+            <i class='bx bx-chevron-right toggle'></i>
+        </header>
+
+        <div class="menu-bar">
+            <div class="menu">
+                <ul class="menu-links">
+                    <li><a href="#"><i class='bx bx-home icon'></i><span class="text nav-text">Home</span></a></li>
+                    <li><a href="#"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Cabinet</span></a></li>
+
+                    <li><a asp-controller="PharmacyManager" asp-action="AddDoctor"><i class="fas fa-user-md icon"></i><span class="text nav-text">Add Doctor</span></a></li>
+
+                    <li><a asp-controller="PharmacyManager" asp-action="AddActiveIngredient"><i class="fas fa-pills icon"></i><span class="text nav-text">Active Ingredient</span></a></li>
+
+                    <li>
+                        <a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="AddDorsageForm">
+                            <i class="fas fa-capsules"></i> Add Dosage
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="CreatePharmacy">
+                            <i class="fas fa-capsules"></i> Pharmacy Details
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="AddPharmacist">
+                            <i class="fas fa-capsules"></i> Add Pharmacist
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link text-white" asp-area="Identity" asp-page="/Account/Logout">
+                            <i class="fas fa-sign-out-alt icon"></i><span class="text nav-text">Logout</span>
+                        </a>
+                    </li>
+                    
+
+                    @* 
+                    <li><a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="ExportDoctorsToExcel">Download Excel</a></li>
+                    <li><a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="ExportDoctorsToPdf">Download PDF</a></li>
+                    <li><a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="ManageIngredients">Manage Ingredients</a></li>
+                    <li><a asp-controller="PharmacyManager" asp-action="NurseHome"><i class="fas fa-pills icon"></i><span class="text nav-text">Dashboard</span></a></li>
+                    <li><a href="#"><i class='bx bxs-report icon'></i><span class="text nav-text">Reports</span></a></li> *@
+                    <!-- User Login Partial (LoginPartial.cshtml) -->
+                    <div class="text-end p-3" style="margin-left: 250px;">
+                        @await Html.PartialAsync("_LoginPartial")
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="row">
+
+                <!-- Optional Side Panel -->
+                <div class="col-md-3">
+                    <h4 class="panel-title">Recent Customers</h4>
+                    <div class="panel-item">Sipho Mokoena</div>
+                    <div class="panel-item">Noluthando Gqamana</div>
+                    <div class="panel-item">Bongani Khumalo</div>
+                </div>
+
+                <!-- Dashboard Area -->
+                <div class="col-md-9">
+                    <div class="card p-4 mb-4">
+                        <h4>Pharmacy Visit Overview</h4>
+                        <canvas id="barChart" height="120"></canvas>
+                    </div>
+
+                    <div class="card p-4">
+                        <h4>Doctor Management</h4>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Surname</th>
+                                    <th>Practice Number</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@item.Name</td>
+                                            <td>@item.Surname</td>
+                                            <td>@item.Practice_Number</td>
+                                            <td>@item.Email</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4">No doctors found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                 
+                </div>
+
+            </div>
+            
+        </div>
+       
+
+        @RenderBody()
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('barChart').getContext('2d');
+        const barChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                datasets: [{
+                    label: '# of Customers',
+                    data: @Html.Raw(Json.Serialize(ViewBag.ChartData)),
+                    backgroundColor: 'rgba(13, 110, 253, 0.8)',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

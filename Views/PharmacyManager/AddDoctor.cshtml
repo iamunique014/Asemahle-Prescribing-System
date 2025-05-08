@@ -1,0 +1,146 @@
+﻿@model PrescribingSystem.Models.Doctor
+
+@{
+    ViewData["Title"] = "Create Doctor";
+}
+
+<style>
+    .info-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 24px;
+        color: #0d6efd;
+        cursor: pointer;
+    }
+
+        .info-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(-5px);
+        }
+
+    .tooltip-text {
+        visibility: hidden;
+        width: 220px;
+        background-color: #f8f9fa;
+        color: #333;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        top: -40px;
+        right: 30px;
+        opacity: 0;
+        transition: opacity 0.3s, transform 0.3s;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #f8f9fa transparent transparent transparent;
+        }
+
+    .form-container {
+        position: relative;
+        padding: 2rem;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="form-container">
+                <!-- Info Icon Top Right -->
+                <div class="info-icon">
+                    ℹ️
+                    <div class="tooltip-text">
+                        Fill in all required fields to add a new doctor.
+                    </div>
+                </div>
+
+                <h2 class="text-center mb-4">Add Doctor</h2>
+
+                <form asp-action="AddDoctor">
+                    <div class="form-group mb-3">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Surname" class="form-label"></label>
+                        <input asp-for="Surname" class="form-control" />
+                        <span asp-validation-for="Surname" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Practice_Number" class="form-label"></label>
+                        <input asp-for="Practice_Number" class="form-control" />
+                        <span asp-validation-for="Practice_Number" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <!-- Progress bar (initially hidden) -->
+                    <div id="progress-container" class="progress mb-3" style="display: none;" role="progressbar" aria-label="Loading Progress" aria-valuemin="0" aria-valuemax="100">
+                        <div id="progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="submit" class="btn btn-primary" onclick="showProgress()">Add Doctor</button>
+                        <div>
+                            <a asp-action="IndexDoctor" class="btn btn-secondary mr-2">Back to Doctors</a>
+                            <a asp-action="Manager" class="btn btn-primary">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+  
+</div>
+
+
+<script>
+    function showProgress() {
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+
+        progressContainer.style.display = 'block';
+
+        let width = 0;
+        const interval = setInterval(function () {
+            if (width >= 100) {
+                clearInterval(interval);
+            } else {
+                width++;
+                progressBar.style.width = width + '%';
+                progressBar.textContent = width + '%';
+            }
+        }, 20);
+    }
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

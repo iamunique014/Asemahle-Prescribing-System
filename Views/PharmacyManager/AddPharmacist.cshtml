@@ -1,0 +1,45 @@
+﻿@model PrescribingSystem.Models.Pharmacist
+
+@{
+    ViewData["Title"] = "Create Pharmacist";
+}
+
+<h1>Create Pharmacist</h1>
+
+<form asp-action="AddPharmacist" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Surname"></label>
+        <input asp-for="Surname" class="form-control" />
+        <span asp-validation-for="Surname" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Cellphone"></label>
+        <input asp-for="Cellphone" class="form-control" />
+        <span asp-validation-for="Cellphone" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+  
+    <div class="form-group">
+        <label asp-for="HealthCouncil"></label>
+        <input asp-for="HealthCouncil" class="form-control" />
+        <span asp-validation-for="HealthCouncil" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="RegistrationNumber"></label>
+        <input asp-for="RegistrationNumber" class="form-control" />
+        <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+<a asp-action="IndexPharmacist">Back to List</a>

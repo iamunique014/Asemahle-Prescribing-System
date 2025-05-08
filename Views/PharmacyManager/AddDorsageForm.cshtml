@@ -1,0 +1,12 @@
+﻿@model PrescribingSystem.Models.DorsageForm
+
+<h2>Add Dorsage Form</h2>
+<form asp-action="AddDorsageForm">
+    <div class="form-group">
+        <label asp-for="DorsageFormName" class="control-label"></label>
+        <input asp-for="DorsageFormName" class="form-control" />
+        <span asp-validation-for="DorsageFormName" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a asp-action="IndexDorsageForm" class="btn btn-secondary">Back</a>
+</form>

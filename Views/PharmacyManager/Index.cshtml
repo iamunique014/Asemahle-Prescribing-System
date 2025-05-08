@@ -1,0 +1,45 @@
+﻿@model IEnumerable<PrescribingSystem.Models.ActiveIngredients>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+@* <p>
+    <a asp-action="Create">Create New</a>
+</p> *@
+<table class="table table-dark table-striped">
+    <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+        <div class="text-center">
+            <a asp-action="AddActiveIngredient" class="btn btn-success">Create New Active Ingredient</a>
+        </div>
+        <div class="text-center">
+            <a asp-action="Manager" class="btn btn-dark">Back</a>
+        </div>
+    </div>
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ActiveIngredientName)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ActiveIngredientName)
+            </td>
+            <td>
+                    <div class="btn-group" role="group" aria-label="Active Ingredient Actions">
+                        <a asp-action="EditActiveIngredient" asp-route-id="@item.ActiveIngredientId" class="btn btn-primary">Edit</a>
+                        <a asp-action="ActiveIngredientsDetails" asp-route-id="@item.ActiveIngredientId" class="btn btn-outline-light">Details</a>
+                        <a asp-action="DeleteActiveIngredients" asp-route-id="@item.ActiveIngredientId" class="btn btn-warning">Delete</a>
+                    </div>
+            </td>
+        </tr>
+        }
+    
+    </tbody>
+</table>

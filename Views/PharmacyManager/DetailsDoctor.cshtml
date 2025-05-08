@@ -1,0 +1,39 @@
+﻿@model PrescribingSystem.Models.Doctor
+
+@{
+    ViewData["Title"] = "Doctor Details";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-center mb-4">Doctor Details</h2>
+
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>Name</th>
+                        <td>@Model.Name</td>
+                    </tr>
+                    <tr>
+                        <th>Surname</th>
+                        <td>@Model.Surname</td>
+                    </tr>
+                    <tr>
+                        <th>Practice Number</th>
+                        <td>@Model.Practice_Number</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>@Model.Email</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="btn-group" role="group" aria-label="Active Ingredient Actions">
+                <a asp-action="EditDoctor" asp-route-id="@Model.DoctorId" class="btn btn-primary">Edit</a>
+                <a asp-action="IndexDoctor" class="btn btn-secondary ms-2">Back to Doctors</a>
+            </div>
+        </div>
+    </div>
+</div>

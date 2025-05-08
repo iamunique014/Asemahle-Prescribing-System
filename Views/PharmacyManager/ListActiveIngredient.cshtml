@@ -1,0 +1,27 @@
+﻿@model IEnumerable<ActiveIngredients>
+
+<h2>Active Ingredients</h2>
+<a asp-action="Create">+ Create New</a>
+
+<table>
+    <thead>
+        <tr>
+            @* <th>@Html.DisplayNameFor(model => model.First().ActiveIngredientId)</th> *@
+            <th>@Html.DisplayNameFor(model => model.First().ActiveIngredientName)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+               @*  <td>@item.ActiveIngredientId</td> *@
+                <td>@item.ActiveIngredientName</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ActiveIngredientId">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@item.ActiveIngredientId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

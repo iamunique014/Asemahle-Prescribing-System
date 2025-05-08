@@ -1,0 +1,24 @@
+﻿@model PrescribingSystem.Models.ActiveIngredients
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>ActiveIngredients Details</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ActiveIngredientName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ActiveIngredientName)
+        </dd>
+    </dl>
+</div>
+<div class="btn-group" role="group" aria-label="Active Ingredient Actions">
+    <a asp-action="Edit" asp-route-id="@Model?.ActiveIngredientId" class="btn btn-primary">Edit</a> 
+    <a asp-action="Index" class="btn btn-warning">Back to List</a>
+</div>

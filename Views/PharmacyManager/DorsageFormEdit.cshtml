@@ -1,0 +1,13 @@
+﻿@model PrescribingSystem.Models.DorsageForm
+
+<h2>Edit Dorsage Form</h2>
+<form asp-action="DorsageFormEdit">
+    <input type="hidden" asp-for="DorsageFormId" />
+    <div class="form-group">
+        <label asp-for="DorsageFormName" class="control-label"></label>
+        <input asp-for="DorsageFormName" class="form-control" />
+        <span asp-validation-for="DorsageFormName" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a asp-action="IndexDorsageForm" class="btn btn-secondary">Cancel</a>
+</form>

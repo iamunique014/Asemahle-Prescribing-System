@@ -1,0 +1,29 @@
+﻿@model IEnumerable<PrescribingSystem.Models.DorsageForm>
+
+<h2>Dorsage Forms</h2>
+<a asp-action="Manager" class="btn btn-primary">Home</a>
+<a asp-action="AddDorsageForm" class="btn btn-primary">New Dorsage </a>
+@* <a asp-action="IndexDorsageForm" class="btn btn-primary">Back </a> *@
+<table class="table table-dark table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.DorsageFormName</td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="DorsageForm Actions">
+                        <a asp-action="DorsageFormEdit" asp-route-id="@item.DorsageFormId" class="btn btn-primary">Edit</a>
+                        <a asp-action="DeleteDorsage" asp-route-id="@item.DorsageFormId" class="btn btn-warning">Delete</a>
+                    </div>
+                </td>
+            </tr>
+
+        }
+    </tbody>
+</table>

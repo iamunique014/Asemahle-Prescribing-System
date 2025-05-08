@@ -1,0 +1,56 @@
+﻿@model PrescribingSystem.Models.ViewModels.ActiveIngredientViewModel
+
+@{
+    ViewData["Title"] = "Manage Active Ingredients";
+}
+
+<h2 class="mb-4">Manage Active Ingredients</h2>
+<div class="row">
+    <!-- Left: Form -->
+    <div class="col-md-5">
+        <h4>Add New Active Ingredient</h4>
+        <form asp-action="ManageIngredients" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="NewActiveIngredient.ActiveIngredientName" class="control-label"></label>
+                <input asp-for="NewActiveIngredient.ActiveIngredientName" class="form-control" />
+                <span asp-validation-for="NewActiveIngredient.ActiveIngredientName" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2">
+                <input type="submit" value="Add" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+
+    <!-- Right: List -->
+    <div class="col-md-7">
+        <h4>Existing Ingredients</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Active Ingredient Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ActiveIngredientsList)
+                {
+                    <tr>
+                        <td>@item.ActiveIngredientName</td>
+                        <td>
+                            <a asp-action="EditActiveIngredient" asp-route-id="@item.ActiveIngredientId">Edit</a> |
+                            <a asp-action="ActiveIngredientsDetails" asp-route-id="@item.ActiveIngredientId">Details</a> |
+                            <a asp-action="DeleteActiveIngredients" asp-route-id="@item.ActiveIngredientId">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

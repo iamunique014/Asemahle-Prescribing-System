@@ -1,0 +1,35 @@
+﻿@model PrescribingSystem.Models.Pharmacy
+
+@{
+    ViewData["Title"] = "Delete Pharmacy";
+}
+
+<h1>Delete Pharmacy</h1>
+
+<h4>Are you sure you want to delete this?</h4>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-4">Name</dt>
+        <dd class="col-sm-8">@Model.Name</dd>
+
+        <dt class="col-sm-4">Health Council Registration Number</dt>
+        <dd class="col-sm-8">@Model.HealthCouncilRegistrationNumber</dd>
+
+        <dt class="col-sm-4">Physical Address 1</dt>
+        <dd class="col-sm-8">@Model.PhysicalAddress1</dd>
+
+        <dt class="col-sm-4">Email</dt>
+        <dd class="col-sm-8">@Model.Email</dd>
+    </dl>
+</div>
+
+<form asp-action="DeletePharmacy" style="display: inline;">
+    <input type="hidden" asp-for="PharmacyId" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="IndexPharmacy" class="btn btn-secondary">Cancel</a>
+</form>
+
+<a asp-action="IndexPharmacy" class="btn btn-primary">
+    <i class="fas fa-arrow-left"></i> Back
+</a>
