@@ -8,6 +8,12 @@ using PrescribingSystem.Models;
 using System.Linq;
 using OfficeOpenXml;
 using PrescribingSystem.Models.ViewModels;
+using System.Net.Mail;
+using System.Text;
+using System.Reflection.Metadata;
+using Document = iTextSharp.text.Document;
+
+
 
 namespace PrescribingSystem.Controllers
 {
@@ -299,6 +305,43 @@ namespace PrescribingSystem.Controllers
         {
             return View(await _context.Doctor.ToListAsync());
         }
+        public IActionResult ExportStockOrderToPdf(int id)
+        {
+            var order = _context.StockOrder
+                                .Include(o => o.MedicationStockOrder)
+                                    .ThenInclude(mso => mso.Medication)
+                                .FirstOrDefault(o => o.StockOrderId == id);
+
+            if (order == null)
+                return NotFound();
+
+            using (var stream = new MemoryStream())
+            {
+                var document = new iTextSharp.text.Document();
+                var writer = PdfWriter.GetInstance(document, stream);
+                writer.CloseStream = false;
+
+                document.Open();
+                document.Add(new Paragraph("Medication Stock Order Report\n\n"));
+                document.Add(new Paragraph($"Order Number: {order.OrderNumber}"));
+                document.Add(new Paragraph($"Order Date: {order.OrderDate.ToShortDateString()}"));
+                document.Add(new Paragraph($"Status: {(order.Status ? "Processed" : "Pending")}\n\n"));
+
+                document.Add(new Paragraph("Medications:\n"));
+
+                foreach (var item in order.MedicationStockOrder)
+                {
+                    var medName = item.Medication?.Name ?? "N/A";
+                    document.Add(new Paragraph($"- {medName}, Quantity: {item.Quantity}"));
+                }
+
+                document.Close();
+                var bytes = stream.ToArray();
+
+                return File(bytes, "application/pdf", $"StockOrder_{order.OrderNumber}.pdf");
+            }
+        }
+
         public IActionResult ExportDoctorsToPdf()
         {
             var doctors = _context.Doctor.ToList();
@@ -1257,8 +1300,377 @@ namespace PrescribingSystem.Controllers
             var medication = await _context.Medication.FindAsync(id);
             _context.Medication.Remove(medication);
             await _context.SaveChangesAsync();
-            return RedirectToAction("IndexMedication");
+            return RedirectToAction("IndexMedication"); }
+        /// <summary>
+        /// /
+        /// </summary>
+        /// <returns></returns>
+        //public async Task<IActionResult> IndexStockOrder()
+        //{
+        //    var orders = await _context.StockOrder
+        //        .Include(s => s.Supplier)
+        //        .Include(s => s.MedicationStockOrder)
+        //        .ThenInclude(i => i.Medication)
+        //        .ToListAsync();
+
+        //    return View(orders);
+        //}
+        public async Task<IActionResult> IndexStockOrder(DateTime? startDate, DateTime? endDate)
+        {
+            var orders = _context.StockOrder
+                .Include(s => s.Supplier)
+                .Include(s => s.MedicationStockOrder)
+                .ThenInclude(i => i.Medication)
+                .AsQueryable();
+
+            if (startDate.HasValue)
+                orders = orders.Where(o => o.OrderDate >= startDate.Value.Date);
+
+            if (endDate.HasValue)
+                orders = orders.Where(o => o.OrderDate <= endDate.Value.Date);
+
+            var result = await orders.ToListAsync();
+            return View(result);
         }
+
+
+        public IActionResult AddMedicationStock()
+        {
+            ViewBag.StockOrderCount = _context.StockOrder.Count(); // Or any logic to count orders
+            ViewBag.MedicationId = new MultiSelectList(_context.Medication, "MedicationId", "Name");
+            ViewBag.StockOrderId = new SelectList(_context.StockOrder, "StockOrderId", "OrderNumber");
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMedicationStock(StockOrderCreateViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                foreach (var medicationId in model.SelectedMedicationIds)
+                {
+                    var stockOrder = new MedicationStockOrder
+                    {
+                        StockOrderId = model.StockOrderId,
+                        MedicationId = medicationId,
+                        Quantity = model.Quantity
+                    };
+
+                    _context.MedicationStockOrder.Add(stockOrder);
+                }
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(IndexStockOrder));
+            }
+
+            ViewBag.MedicationId = new MultiSelectList(_context.Medication, "MedicationId", "Name", model.SelectedMedicationIds);
+            ViewBag.StockOrderId = new SelectList(_context.StockOrder, "StockOrderId", "OrderNumber", model.StockOrderId);
+            return View(model);
+        }
+        //public IActionResult GenerateOrderPdf(int id)
+        //{
+        //    var order = _context.MedicationStockOrder
+        //                        .Include(o => o.StockOrder)
+        //                        .ThenInclude(m => m.MedicationStockOrder)
+        //                        .FirstOrDefault(o => o.StockOrderId == id);
+
+        //    if (order == null) return NotFound();
+
+        //    // Logic to generate PDF (e.g., using iTextSharp, DinkToPdf, etc.)
+        //    byte[] pdfBytes = _pdfService.GenerateOrderPdf(order); // implement this in your service
+
+        //    return File(pdfBytes, "application/pdf", $"Order_{order.StockOrder}.pdf");
+        //}
+
+        private async Task SendOrderEmail(int supplierId, List<MedicationStockOrder> orderItems)
+        {
+            var supplier = await _context.Supplier.FindAsync(supplierId);
+            var medicationDetails = orderItems
+                .Join(_context.Medication,
+                    oi => oi.MedicationId,
+                    m => m.MedicationId,
+                    (oi, m) => new { m.Name, oi.Quantity })
+                .ToList();
+
+            var body = new StringBuilder();
+            body.AppendLine("<h3>New Medication Order</h3><ul>");
+            foreach (var item in medicationDetails)
+            {
+                body.AppendLine($"<li>{item.Name} - Qty: {item.Quantity}</li>");
+            }
+            body.AppendLine("</ul>");
+
+            var message = new MailMessage("linganiamanda@gmail.com", supplier.Email)
+            {
+                Subject = "New Medication Stock Order",
+                Body = body.ToString(),
+                IsBodyHtml = true
+            };
+
+            using var smtp = new SmtpClient("smtp.example.com")
+            {
+                Credentials = new System.Net.NetworkCredential("linganiamanda@gmail.com", "sgktttnlgsedsdny"),
+                EnableSsl = true
+            };
+
+            await smtp.SendMailAsync(message);
+        }
+
+        // GET: MedicationStockOrders/Details/5
+        public async Task<IActionResult> MedicationStockOrderDetails(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var order = await _context.MedicationStockOrder
+                .Include(m => m.Medication)
+                .Include(m => m.StockOrder)
+                .FirstOrDefaultAsync(m => m.MedicationStockOrderId == id);
+
+            if (order == null)
+                return NotFound();
+
+            return View(order);
+        }
+
+        // GET: MedicationStockOrders/Edit/5
+        public async Task<IActionResult> MedicationStockOrderEdit(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var order = await _context.MedicationStockOrder.FindAsync(id);
+            if (order == null)
+                return NotFound();
+
+            ViewData["MedicationId"] = new SelectList(_context.Medication, "MedicationId", "Name", order.MedicationId);
+            ViewData["StockOrderId"] = new SelectList(_context.StockOrder, "StockOrderId", "StockOrderId", order.StockOrderId);
+            return View(order);
+        }
+
+        // POST: MedicationStockOrders/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MedicationStockOrderEdit(int id, MedicationStockOrder order)
+        {
+            if (id != order.MedicationStockOrderId)
+                return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(order);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.MedicationStockOrder.Any(e => e.MedicationStockOrderId == id))
+                        return NotFound();
+                    else
+                        throw;
+                }
+                return RedirectToAction(nameof(IndexStockOrder));
+            }
+
+            ViewData["MedicationId"] = new SelectList(_context.Medication, "MedicationId", "Name", order.MedicationId);
+            ViewData["StockOrderId"] = new SelectList(_context.StockOrder, "StockOrderId", "StockOrderId", order.StockOrderId);
+            return View(order);
+        }
+
+        // GET: MedicationStockOrders/Delete/5
+        public async Task<IActionResult> DeleteMedicationStockOrder(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var order = await _context.MedicationStockOrder
+                .Include(m => m.Medication)
+                .Include(m => m.StockOrder)
+                .FirstOrDefaultAsync(m => m.MedicationStockOrderId == id);
+
+            if (order == null)
+                return NotFound();
+
+            return View(order);
+        }
+
+        // POST: MedicationStockOrders/Delete/5
+        [HttpPost, ActionName("DeleteMedicationStockOrder")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MedicationStockOrderDeleteConfirmed(int id)
+        {
+            var order = await _context.MedicationStockOrder.FindAsync(id);
+            if (order != null)
+            {
+                _context.MedicationStockOrder.Remove(order);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(IndexStockOrder));
+        }
+
+
+        // GET: StockOrders
+        public async Task<IActionResult> IndexStock()
+        {
+            var stockOrders = _context.StockOrder.Include(s => s.Supplier);
+            return View(await stockOrders.ToListAsync());
+        }
+
+        // GET: StockOrders/Create
+        public IActionResult AddStock()
+        {
+            var viewModel = new StockOrderViewModel
+            {
+                OrderDate = DateTime.Now,
+                OrderNumber = $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
+            };
+
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName");
+            return View(viewModel);
+        }
+
+        // POST: StockOrders/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddStock(StockOrderViewModel viewModel)
+        {
+
+            if (ModelState.IsValid)
+            {
+                var stockOrder = new StockOrder
+                {
+                    OrderNumber = viewModel.OrderNumber ?? $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+                    SupplierId = viewModel.SupplierId,
+                    OrderDate = viewModel.OrderDate,
+                    Status = viewModel.Status
+                };
+
+                _context.Add(stockOrder);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(IndexStock)); // Adjust if needed
+            }
+
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", viewModel.SupplierId);
+            return View(viewModel);
+        }
+        public async Task<IActionResult> EditStock(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var stockOrder = await _context.StockOrder.FindAsync(id);
+            if (stockOrder == null)
+                return NotFound();
+
+            var viewModel = new StockOrderViewModel
+            {
+                StockOrderId = stockOrder.StockOrderId,
+                OrderNumber = stockOrder.OrderNumber,
+                SupplierId = stockOrder.SupplierId,
+                OrderDate = stockOrder.OrderDate,
+                Status = stockOrder.Status
+            };
+
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", viewModel.SupplierId);
+            return View(viewModel);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditStock(int id, StockOrderViewModel viewModel)
+        {
+            if (id != viewModel.StockOrderId)
+                return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var stockOrder = await _context.StockOrder.FindAsync(id);
+                    if (stockOrder == null)
+                        return NotFound();
+
+                    stockOrder.SupplierId = viewModel.SupplierId;
+                    stockOrder.OrderDate = viewModel.OrderDate;
+                    stockOrder.Status = viewModel.Status;
+
+                    _context.Update(stockOrder);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.StockOrder.Any(e => e.StockOrderId == viewModel.StockOrderId))
+                        return NotFound();
+                    else
+                        throw;
+                }
+                return RedirectToAction(nameof(IndexStock));
+            }
+
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", viewModel.SupplierId);
+            return View(viewModel);
+        }
+
+        public async Task<IActionResult> DeleteStock(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var stockOrder = await _context.StockOrder
+                .Include(s => s.Supplier)
+                .FirstOrDefaultAsync(m => m.StockOrderId == id);
+
+            if (stockOrder == null)
+                return NotFound();
+
+            return View(stockOrder);
+        }
+
+        [HttpPost, ActionName("DeleteStock")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> StockDeleteConfirmed(int id)
+        {
+            var stockOrder = await _context.StockOrder.FindAsync(id);
+            if (stockOrder != null)
+            {
+                _context.StockOrder.Remove(stockOrder);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(IndexStock));
+        }
+        public async Task<IActionResult> StockDetails(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var stockOrder = await _context.StockOrder
+                .Include(s => s.Supplier)
+                .FirstOrDefaultAsync(m => m.StockOrderId == id);
+
+            if (stockOrder == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new StockOrderViewModel
+            {
+                StockOrderId = stockOrder.StockOrderId,
+                OrderNumber = stockOrder.OrderNumber,
+                SupplierId = stockOrder.SupplierId,
+                OrderDate = stockOrder.OrderDate,
+                Status = stockOrder.Status
+            };
+
+            ViewBag.SupplierName = stockOrder.Supplier?.SupplierName;
+
+            return View(viewModel);
+        }
+
+
         private bool MedicationExists(int id)
         {
             return _context.Medication.Any(e => e.MedicationId == id);

@@ -1,0 +1,22 @@
+﻿@model PrescribingSystem.Models.MedicationStockOrder
+
+<h2>Edit Medication Stock Order</h2>
+
+<form asp-action="Edit">
+    <input type="hidden" asp-for="MedicationStockOrderId" />
+    <div class="form-group">
+        <label asp-for="MedicationId"></label>
+        <select asp-for="MedicationId" asp-items="ViewBag.MedicationId" class="form-control"></select>
+    </div>
+    <div class="form-group">
+        <label asp-for="StockOrderId"></label>
+        <select asp-for="StockOrderId" asp-items="ViewBag.StockOrderId" class="form-control"></select>
+    </div>
+    <div class="form-group">
+        <label asp-for="Quantity"></label>
+        <input asp-for="Quantity" class="form-control" />
+        <span asp-validation-for="Quantity" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+<a asp-action="Index">Back to List</a>

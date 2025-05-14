@@ -1,0 +1,43 @@
+﻿@model PrescribingSystem.Models.ViewModels.StockOrderViewModel
+
+@{
+    ViewData["Title"] = "Create Stock Order";
+}
+
+<h2>Create Stock Order</h2>
+
+<form asp-action="AddStock" method="post">
+    <div class="form-group">
+        <label asp-for="SupplierId" class="control-label"></label>
+        <select asp-for="SupplierId" class="form-control" asp-items="ViewBag.SupplierId">
+            <option value="">-- Select Supplier --</option>
+        </select>
+        <span asp-validation-for="SupplierId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="OrderDate" class="control-label"></label>
+        <input asp-for="OrderDate" class="form-control" />
+        <span asp-validation-for="OrderDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Status" class="control-label"></label>
+        <select asp-for="Status" class="form-control">
+            <option value="false">Pending</option>
+            <option value="true">Completed</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+
+    <input type="hidden" asp-for="OrderNumber" />
+
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a asp-action="IndexStock" class="btn btn-secondary">Back to List</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -7,6 +7,7 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>@ViewBag.Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
     <!-- External Styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -146,6 +147,17 @@
                             <i class="fas fa-handshake"></i> Medication
                         </a>
                     </li>
+                    <li>
+                        <a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="AddStock">
+                            <i class="fas fa-truck-loading"></i> Stock Order
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="nav-link text-dark" asp-controller="PharmacyManager" asp-action="AddMedicationStock">
+                            <i class="fas fa-prescription-bottle-alt"></i> Medication Stock
+                        </a>
+                    </li>
 
                     <li>
                         <a class="nav-link text-white" asp-area="Identity" asp-page="/Account/Logout">
@@ -162,9 +174,9 @@
                     <li><a asp-controller="PharmacyManager" asp-action="NurseHome"><i class="fas fa-pills icon"></i><span class="text nav-text">Dashboard</span></a></li>
                     <li><a href="#"><i class='bx bxs-report icon'></i><span class="text nav-text">Reports</span></a></li> *@
                     <!-- User Login Partial (LoginPartial.cshtml) -->
-                    <div class="text-end p-3" style="margin-left: 250px;">
+                    @* <div class="text-end p-3" style="margin-left: 250px;">
                         @await Html.PartialAsync("_LoginPartial")
-                    </div>
+                    </div> *@
                 </ul>
             </div>
         </div>

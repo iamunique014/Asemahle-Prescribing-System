@@ -1,0 +1,87 @@
+﻿@model IEnumerable<PrescribingSystem.Models.StockOrder>
+
+@{
+    ViewData["Title"] = "Stock Orders";
+}
+
+<h2>Stock Orders</h2>
+
+<div class="mb-4">
+    <a asp-action="AddMedicationStock" class="btn btn-success me-2">
+        <i class="fas fa-plus"></i> Medication Stock
+    </a>
+    <a asp-action="Manager" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+</div>
+
+@foreach (var group in Model.GroupBy(o => o.Supplier))
+{
+    var collapseId = $"collapse-{group.Key?.SupplierId}";
+    <div class="card my-3">
+        <div class="card-header bg-dark text-white">
+            <a class="text-white text-decoration-none" data-bs-toggle="collapse" href="#@collapseId" role="button" aria-expanded="false">
+                <h5 class="mb-0">@group.Key?.SupplierName </h5>
+            </a>
+        </div>
+        <div class="collapse" id="@collapseId">
+            <div class="card-body p-0">
+                <table class="table table-dark table-striped m-0">
+                    <thead>
+                        <tr>
+                            <th>Order Number</th>
+                            <th>Order Date</th>
+                            <th>Status</th>
+                            <th>Medication</th>
+                          
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in group)
+                        {
+                            <tr>
+                                <td>@order.OrderNumber</td>
+                                <td>@order.OrderDate.ToShortDateString()</td>
+                                <td>@(order.Status ? "Processed" : "Pending")</td>
+                                <td>
+                                    <ul class="mb-0">
+                                        @foreach (var item in order.MedicationStockOrder)
+                                        {
+                                            <li>@item.Medication?.Name - Qty: @item.Quantity</li>
+                                        }
+                                    </ul>
+
+                                    <!-- Actions -->
+                                    <div class="mt-2">
+                                        <a asp-action="MedicationStockOrderDetails" asp-route-id="@order.StockOrderId" class="btn btn-info btn-sm me-1">
+                                            <i class="fas fa-info-circle"></i> Details
+                                        </a>
+                                        <a asp-action="MedicationStockOrderEdit" asp-route-id="@order.StockOrderId" class="btn btn-warning btn-sm me-1">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <a asp-action="DeleteMedicationStockOrder" asp-route-id="@order.StockOrderId" class="btn btn-danger btn-sm me-1"
+                                           onclick="return confirm('Are you sure you want to delete this order?');">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </a>
+
+                                        <!-- PDF Button -->
+                                        <a asp-action="ExportStockOrderToPdf" asp-route-id="@order.StockOrderId" class="btn btn-secondary btn-sm me-1">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
+
+                                        <!-- Email Button -->
+                                        <a asp-action="EmailOrderToSupplier" asp-route-id="@order.StockOrderId" class="btn btn-success btn-sm">
+                                            <i class="fas fa-paper-plane"></i> Send to Supplier
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+
+                </table>
+            </div>
+        </div>
+    </div>
+}

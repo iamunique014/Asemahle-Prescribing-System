@@ -1,0 +1,44 @@
+﻿@model PrescribingSystem.Models.ViewModels.StockOrderViewModel
+
+@{
+    ViewData["Title"] = "Edit Stock Order";
+}
+
+<h2>Edit Stock Order</h2>
+
+<form asp-action="EditStock" method="post">
+    <input type="hidden" asp-for="StockOrderId" />
+    <input type="hidden" asp-for="OrderNumber" />
+
+    <div class="form-group">
+        <label asp-for="SupplierId" class="control-label"></label>
+        <select asp-for="SupplierId" class="form-control" asp-items="ViewBag.SupplierId">
+            <option value="">-- Select Supplier --</option>
+        </select>
+        <span asp-validation-for="SupplierId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="OrderDate" class="control-label"></label>
+        <input asp-for="OrderDate" class="form-control" />
+        <span asp-validation-for="OrderDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Status" class="control-label"></label>
+        <select asp-for="Status" class="form-control">
+            <option value="false">Pending</option>
+            <option value="true">Completed</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+    <a asp-action="IndexStock" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

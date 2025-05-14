@@ -19,6 +19,8 @@ namespace PrescribingSystem.Data
         public DbSet<Pharmacist> Pharmacist { get; set; }
         public DbSet<Supplier> Supplier { get; set; }
         public DbSet<Medication> Medication { get; set; }
+        public DbSet<MedicationStockOrder> MedicationStockOrder { get; set; }
+        public DbSet<StockOrder> StockOrder { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +38,19 @@ namespace PrescribingSystem.Data
                 .WithMany(ai => ai.CustomerAllergies)
                 .HasForeignKey(ca => ca.ActiveIngredientId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MedicationStockOrder>()
+        .HasOne(mso => mso.StockOrder)
+        .WithMany(so => so.MedicationStockOrder)
+        .HasForeignKey(mso => mso.StockOrderId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MedicationStockOrder>()
+                .HasOne(mso => mso.Medication)
+                .WithMany()
+                .HasForeignKey(mso => mso.MedicationId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
+
 }
