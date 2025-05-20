@@ -1,8 +1,10 @@
-﻿@model PrescribingSystem.Models.ViewModels.MedicationViewModel
+﻿@* @model PrescribingSystem.Models.ViewModels.MedicationViewModel
 
 @{
     ViewData["Title"] = "Create Medication";
+    var activeIngredients = ViewBag.ActiveIngredients as List<PrescribingSystem.Models.ActiveIngredients> ?? new List<PrescribingSystem.Models.ActiveIngredients>();
 }
+
 
 <h2>Create Medication</h2>
 
@@ -12,17 +14,19 @@
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
+
     <div class="form-group">
         <label asp-for="Schedule" class="control-label"></label>
         <input asp-for="Schedule" class="form-control" />
         <span asp-validation-for="Schedule" class="text-danger"></span>
     </div>
-   
+
     <div class="form-group">
         <label asp-for="CurrentSalesPrice" class="control-label"></label>
         <input asp-for="CurrentSalesPrice" class="form-control" />
         <span asp-validation-for="CurrentSalesPrice" class="text-danger"></span>
     </div>
+
     <div class="form-group">
         <label asp-for="DorsageFormId" class="control-label"></label>
         <select asp-for="DorsageFormId" class="form-control" asp-items="ViewBag.DosageFormId">
@@ -38,9 +42,153 @@
         </select>
         <span asp-validation-for="SupplierId" class="text-danger"></span>
     </div>
-   @*  <div class="form-group">
+
+    <div class="form-group">
+        <label asp-for="ReOrderLevel" class="control-label"></label>
+        <input asp-for="ReOrderLevel" class="form-control" />
+        <span asp-validation-for="ReOrderLevel" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="QuantityOnHand" class="control-label"></label>
+        <input asp-for="QuantityOnHand" class="form-control" />
+        <span asp-validation-for="QuantityOnHand" class="text-danger"></span>
+    </div>
+    
+    <div class="row">
+        <!-- Active Ingredients (Left Side) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <strong>Select Active Ingredients</strong>
+                </div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    @foreach (var ingredient in (List<ActiveIngredients>)ViewBag.ActiveIngredients)
+                    {
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input active-ingredient-checkbox"
+                                   id="ingredient_@ingredient.ActiveIngredientId"
+                                   name="SelectedActiveIngredientIds"
+                                   value="@ingredient.ActiveIngredientId"
+                                   data-name="@ingredient.ActiveIngredientName" />
+                            <label class="form-check-label" for="ingredient_@ingredient.ActiveIngredientId">
+                                @ingredient.ActiveIngredientName
+                            </label>
+                        </div>
+                    }
+                    <ul id="selectedIngredientsList" class="list-group mt-3"></ul>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Summary (Right Side) -->
+        <!-- Summary (Right Side) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <strong>Selected Ingredients and Strengths</strong>
+                </div>
+                <div class="card-body">
+                    <ul id="selectedIngredientsList" class="list-group mt-3"></ul>
+
+                        <!-- JS will populate this with strength inputs -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+   
+
+    <div class="form-group form-check">
+        <input asp-for="Status" class="form-check-input" />
+        <label asp-for="Status" class="form-check-label"></label>
+    </div>
+
+    <button type="submit" class="btn btn-success">Create</button>
+    <a asp-action="IndexMedication" class="btn btn-secondary">Back</a>
+</form>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Active Ingredients: Checkbox + Strength Textbox in <ul>
+            const ingredientCheckboxes = document.querySelectorAll('.active-ingredient-checkbox');
+            const selectedList = document.getElementById('selectedIngredientsList');
+
+            ingredientCheckboxes.forEach(checkbox => {
+                const ingredientId = checkbox.value;
+                const ingredientName = checkbox.dataset.name;
+                const liId = `ingredient-${ingredientId}`;
+
+                checkbox.addEventListener('change', function () {
+                    if (this.checked) {
+                        // Add to list if not already present
+                        if (!document.getElementById(liId)) {
+                            const li = document.createElement('li');
+                            li.id = liId;
+                            li.classList.add('list-group-item');
+                            li.innerHTML = `
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>${ingredientName}</span>
+                                    <input type="text"
+                                           class="form-control form-control-sm ml-2"
+                                           name="ActiveIngredientStrengths[${ingredientId}]"
+                                           placeholder="Strength (e.g., 500mg)"
+                                           style="width: 150px;"
+                                           required />
+                                </div>
+                            `;
+                            selectedList.appendChild(li);
+                        }
+                    } else {
+                        // Remove from list if unchecked
+                        const li = document.getElementById(liId);
+                        if (li) selectedList.removeChild(li);
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+ *@
+
+@model PrescribingSystem.Models.ViewModels.MedicationViewModel
+
+@{
+    ViewData["Title"] = "Create Medication";
+    var activeIngredients = ViewBag.ActiveIngredients as List<PrescribingSystem.Models.ActiveIngredients> ?? new List<PrescribingSystem.Models.ActiveIngredients>();
+}
+
+<h2>Create Medication</h2>
+
+<form asp-action="AddMedication" method="post">
+    <div class="form-group">
+        <label asp-for="Name" class="control-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Schedule" class="control-label"></label>
+        <input asp-for="Schedule" class="form-control" />
+        <span asp-validation-for="Schedule" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CurrentSalesPrice" class="control-label"></label>
+        <input asp-for="CurrentSalesPrice" class="form-control" />
+        <span asp-validation-for="CurrentSalesPrice" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
         <label asp-for="DorsageFormId" class="control-label"></label>
-        <select asp-for="DorsageFormId" class="form-control" asp-items="Model.DosageForms">
+        <select asp-for="DorsageFormId" class="form-control" asp-items="ViewBag.DosageFormId">
             <option value="">-- Select Dosage Form --</option>
         </select>
         <span asp-validation-for="DorsageFormId" class="text-danger"></span>
@@ -48,27 +196,108 @@
 
     <div class="form-group">
         <label asp-for="SupplierId" class="control-label"></label>
-        <select asp-for="SupplierId" class="form-control" asp-items="Model.Suppliers">
+        <select asp-for="SupplierId" class="form-control" asp-items="ViewBag.SupplierId">
             <option value="">-- Select Supplier --</option>
         </select>
         <span asp-validation-for="SupplierId" class="text-danger"></span>
-    </div> *@
+    </div>
 
     <div class="form-group">
         <label asp-for="ReOrderLevel" class="control-label"></label>
         <input asp-for="ReOrderLevel" class="form-control" />
         <span asp-validation-for="ReOrderLevel" class="text-danger"></span>
     </div>
+
     <div class="form-group">
         <label asp-for="QuantityOnHand" class="control-label"></label>
         <input asp-for="QuantityOnHand" class="form-control" />
         <span asp-validation-for="QuantityOnHand" class="text-danger"></span>
     </div>
-    <div class="form-group">
-        <label asp-for="Status" class="control-label"></label>
-        <input asp-for="Status" class="form-check-input" type="checkbox" />
-        <span asp-validation-for="Status" class="text-danger"></span>
+
+    <div class="row">
+        <!-- Active Ingredients (Left Side) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <strong>Select Active Ingredients</strong>
+                </div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    @foreach (var ingredient in activeIngredients)
+                    {
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input active-ingredient-checkbox"
+                                   id="ingredient_@ingredient.ActiveIngredientId"
+                                   name="SelectedActiveIngredientIds"
+                                   value="@ingredient.ActiveIngredientId"
+                                   data-name="@ingredient.ActiveIngredientName" />
+                            <label class="form-check-label" for="ingredient_@ingredient.ActiveIngredientId">
+                                @ingredient.ActiveIngredientName
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary (Right Side) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <strong>Selected Ingredients and Strengths</strong>
+                </div>
+                <div class="card-body">
+                    <ul id="selectedIngredientsSummaryList" class="list-group mt-3"></ul>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <div class="form-group form-check mt-3">
+        <input asp-for="Status" class="form-check-input" />
+        <label asp-for="Status" class="form-check-label"></label>
+    </div>
+
     <button type="submit" class="btn btn-success">Create</button>
     <a asp-action="IndexMedication" class="btn btn-secondary">Back</a>
 </form>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ingredientCheckboxes = document.querySelectorAll('.active-ingredient-checkbox');
+            const selectedList = document.getElementById('selectedIngredientsSummaryList');
+
+            ingredientCheckboxes.forEach(checkbox => {
+                const ingredientId = checkbox.value;
+                const ingredientName = checkbox.dataset.name;
+                const liId = `ingredient-${ingredientId}`;
+
+                checkbox.addEventListener('change', function () {
+                    if (this.checked) {
+                        if (!document.getElementById(liId)) {
+                            const li = document.createElement('li');
+                            li.id = liId;
+                            li.classList.add('list-group-item');
+                            li.innerHTML = `
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>${ingredientName}</span>
+                                    <input type="text"
+                                           class="form-control form-control-sm ml-2"
+                                           name="ActiveIngredientStrengths[${ingredientId}]"
+                                           placeholder="Strength (e.g., 500mg)"
+                                           style="width: 150px;"
+                                           required />
+                                </div>
+                            `;
+                            selectedList.appendChild(li);
+                        }
+                    } else {
+                        const li = document.getElementById(liId);
+                        if (li) selectedList.removeChild(li);
+                    }
+                });
+            });
+        });
+    </script>
+}

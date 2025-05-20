@@ -1039,7 +1039,7 @@ namespace PrescribingSystem.Controllers
             {
                 _context.Add(medicationSupplier);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(IndexSupplier));
             }
             return View(medicationSupplier);
         }
@@ -1139,6 +1139,21 @@ namespace PrescribingSystem.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        // GET: Medication/Index
+       
+        public async Task<IActionResult> IndexMedication()
+        {
+            var medications = await _context.Medication
+                .Include(m => m.DorsageForm)
+                .Include(m => m.Supplier)
+                .Include(m => m.MedicationActiveIngredients)
+                    .ThenInclude(ma => ma.ActiveIngredient)
+                .ToListAsync();
+
+            return View(medications);
+        }
+
+
 
         // GET: Medication/Create
         public IActionResult AddMedication()
@@ -1148,7 +1163,8 @@ namespace PrescribingSystem.Controllers
             ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName");
             // Populate the Dosage Form dropdown with values from the database
             //ViewBag.DosageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName");
-
+            // Send the actual list of active ingredients
+            ViewBag.ActiveIngredients = _context.ActiveIngredients.ToList();
             //// Populate the Supplier dropdown with values from the database
             //ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName");
 
@@ -1171,64 +1187,40 @@ namespace PrescribingSystem.Controllers
                     SupplierId = model.SupplierId,
                     ReOrderLevel = model.ReOrderLevel,
                     QuantityOnHand = model.QuantityOnHand,
-                    Status = model.Status
+                    Status = model.Status,
                 };
 
-                _context.Add(medication);
+                // Add associated active ingredients and strengths
+                foreach (var activeIngredientId in model.SelectedActiveIngredientIds)
+                {
+                    if (model.ActiveIngredientStrengths.TryGetValue(activeIngredientId, out var strengthStr)
+                        && decimal.TryParse(strengthStr, out decimal strength))
+                    {
+                        medication.MedicationActiveIngredients.Add(new MedicationActiveIngredient
+                        {
+                            ActiveIngredientId = activeIngredientId,
+                            Strength = strength
+                        });
+                    }
+                }
+
+                _context.Medication.Add(medication);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("IndexMedication");
             }
 
-            // Repopulate ViewBag dropdowns on validation error
-            ViewBag.DosageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", model.DorsageFormId);
-            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", model.SupplierId);
+            // If model is invalid, re-populate dropdowns
+            ViewBag.DosageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName");
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName");
+            ViewBag.ActiveIngredients = _context.ActiveIngredients.ToList();
 
             return View(model);
-            // Repopulate dropdowns if validation fails
-            //model.DosageForms = _context.DorsageForm
-            //    .Select(d => new SelectListItem
-            //    {
-            //        Value = d.DorsageFormId.ToString(),
-            //        Text = d.DorsageFormName
-            //    }).ToList();
-
-            //model.Suppliers = _context.Supplier
-            //    .Select(s => new SelectListItem
-            //    {
-            //        Value = s.SupplierId.ToString(),
-            //        Text = s.SupplierName
-            //    }).ToList();
-
-            //return View(model);
-            //if (ModelState.IsValid)
-            //{
-            //    // Add the new medication to the database
-            //    _context.Add(medication);
-            //    await _context.SaveChangesAsync();
-
-            //    // Redirect to the list of medications
-            //    return RedirectToAction("IndexMedication");
-            //}
-
-            //// Repopulate dropdown lists in case of a validation failure
-            //ViewBag.DosageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", medication.DorsageFormId);
-            //ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", medication.SupplierId);
-
-            //return View(medication);
-
         }
 
-        // GET: Medication/Index
-        public async Task<IActionResult> IndexMedication()
-        {
-            //return View(await _context.Medication.ToListAsync());
-            var medications = await _context.Medication
-        .Include(m => m.DorsageForm)
-        .Include(m => m.Supplier)
-        .ToListAsync();
 
-            return View(medications);
-        }
+
+
+
 
         // GET: Medication/Edit/5
         public async Task<IActionResult> EditMedication(int? id)
@@ -1333,28 +1325,98 @@ namespace PrescribingSystem.Controllers
             return View(result);
         }
 
+        // GET: StockOrders/Create
+        public IActionResult AddStock()
+        {
+            var viewModel = new StockOrderViewModel
+            {
+                OrderDate = DateTime.Now,
+                OrderNumber = $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
+            };
+
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName");
+            return View(viewModel);
+        }
+
+        // POST: StockOrders/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddStock(StockOrderViewModel viewModel)
+        {
+
+            if (ModelState.IsValid)
+            {
+                var stockOrder = new StockOrder
+                {
+                    OrderNumber = viewModel.OrderNumber ?? $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+                    SupplierId = viewModel.SupplierId,
+                    OrderDate = viewModel.OrderDate,
+                    Status = viewModel.Status
+                };
+
+                _context.Add(stockOrder);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(IndexStock)); // Adjust if needed
+            }
+
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", viewModel.SupplierId);
+            return View(viewModel);
+        }
 
         public IActionResult AddMedicationStock()
         {
-            ViewBag.StockOrderCount = _context.StockOrder.Count(); // Or any logic to count orders
-            ViewBag.MedicationId = new MultiSelectList(_context.Medication, "MedicationId", "Name");
+            var generatedOrderNumber = $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+
+            var viewModel = new StockOrderCreateViewModel
+            {
+                OrderNumber = generatedOrderNumber,
+                Medications = _context.Medication
+                    .Include(m => m.DorsageForm)
+                    .Include(m => m.Supplier)
+                    .Include(m => m.MedicationActiveIngredients)
+                        .ThenInclude(ma => ma.ActiveIngredient)
+                    .ToList()
+            };
+
+            foreach (var med in viewModel.Medications)
+            {
+                viewModel.Quantity[med.MedicationId] = 0;
+            }
+
             ViewBag.StockOrderId = new SelectList(_context.StockOrder, "StockOrderId", "OrderNumber");
-            return View();
+            return View(viewModel);
         }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMedicationStock(StockOrderCreateViewModel model)
         {
+            if (model.SelectedMedicationIds == null || !model.SelectedMedicationIds.Any())
+            {
+                if (!string.IsNullOrWhiteSpace(Request.Form["SelectedMedicationIds"]))
+                {
+                    model.SelectedMedicationIds = Request.Form["SelectedMedicationIds"]
+                        .ToString()
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(int.Parse)
+                        .ToList();
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 foreach (var medicationId in model.SelectedMedicationIds)
                 {
+                    int quantity = model.Quantity.ContainsKey(medicationId) ? model.Quantity[medicationId] : 0;
+
                     var stockOrder = new MedicationStockOrder
                     {
+                        OrderNumber = model.OrderNumber, // Use the generated one from GET
                         StockOrderId = model.StockOrderId,
                         MedicationId = medicationId,
-                        Quantity = model.Quantity
+                        Quantity = quantity
                     };
 
                     _context.MedicationStockOrder.Add(stockOrder);
@@ -1364,10 +1426,21 @@ namespace PrescribingSystem.Controllers
                 return RedirectToAction(nameof(IndexStockOrder));
             }
 
-            ViewBag.MedicationId = new MultiSelectList(_context.Medication, "MedicationId", "Name", model.SelectedMedicationIds);
+            // Re-populate dropdowns and data
             ViewBag.StockOrderId = new SelectList(_context.StockOrder, "StockOrderId", "OrderNumber", model.StockOrderId);
+            model.Medications = _context.Medication
+                .Include(m => m.DorsageForm)
+                .Include(m => m.Supplier)
+                .Include(m => m.MedicationActiveIngredients)
+                    .ThenInclude(ma => ma.ActiveIngredient)
+                .ToList();
+
             return View(model);
         }
+
+
+
+
         //public IActionResult GenerateOrderPdf(int id)
         //{
         //    var order = _context.MedicationStockOrder
@@ -1518,43 +1591,7 @@ namespace PrescribingSystem.Controllers
             return View(await stockOrders.ToListAsync());
         }
 
-        // GET: StockOrders/Create
-        public IActionResult AddStock()
-        {
-            var viewModel = new StockOrderViewModel
-            {
-                OrderDate = DateTime.Now,
-                OrderNumber = $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
-            };
-
-            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName");
-            return View(viewModel);
-        }
-
-        // POST: StockOrders/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddStock(StockOrderViewModel viewModel)
-        {
-
-            if (ModelState.IsValid)
-            {
-                var stockOrder = new StockOrder
-                {
-                    OrderNumber = viewModel.OrderNumber ?? $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
-                    SupplierId = viewModel.SupplierId,
-                    OrderDate = viewModel.OrderDate,
-                    Status = viewModel.Status
-                };
-
-                _context.Add(stockOrder);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(IndexStock)); // Adjust if needed
-            }
-
-            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", viewModel.SupplierId);
-            return View(viewModel);
-        }
+       
         public async Task<IActionResult> EditStock(int? id)
         {
             if (id == null)

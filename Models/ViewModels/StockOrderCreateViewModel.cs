@@ -6,15 +6,22 @@ namespace PrescribingSystem.Models.ViewModels
 {
     public class StockOrderCreateViewModel
     {
-        [Required]
+        
         public int StockOrderId { get; set; }
+        [Display(Name = "Order Number")]
+        public string OrderNumber { get; set; }
+        public List<Medication> Medications { get; set; } = new();
 
-        [Required(ErrorMessage = "Please select at least one medication.")]
-        [Display(Name = "Medications")]
-        public List<int> SelectedMedicationIds { get; set; } = new List<int>();
+        // List of selected medication IDs
+        public List<int> SelectedMedicationIds { get; set; } = new();
 
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than zero.")]
-        public int Quantity { get; set; }
+        // Quantities keyed by medication ID
+        public Dictionary<int, int> Quantity { get; set; } = new();
+        //public List<int> ExistingStockIds { get; set; } // IDs that should be excluded
+        //public List<SelectListItem> AvailableStocks { get; set; }
+        //public int? SelectedStockId { get; set; } // selected item
+
+
+
     }
 }

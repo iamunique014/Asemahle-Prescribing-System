@@ -12,8 +12,8 @@ using PrescribingSystem.Data;
 namespace PrescribingSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250423224936_CustomerAllergy")]
-    partial class CustomerAllergy
+    [Migration("20250519130656_FixMedicationStock")]
+    partial class FixMedicationStock
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -252,6 +252,7 @@ namespace PrescribingSystem.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ActiveIngredientId"));
 
                     b.Property<string>("ActiveIngredientName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ActiveIngredientId");
@@ -348,6 +349,261 @@ namespace PrescribingSystem.Migrations
                     b.ToTable("Doctor");
                 });
 
+            modelBuilder.Entity("PrescribingSystem.Models.DorsageForm", b =>
+                {
+                    b.Property<int>("DorsageFormId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DorsageFormId"));
+
+                    b.Property<string>("DorsageFormName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("DorsageFormId");
+
+                    b.ToTable("DorsageForm");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.Medication", b =>
+                {
+                    b.Property<int>("MedicationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationId"));
+
+                    b.Property<int?>("ActiveIngredientsActiveIngredientId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CurrentSalesPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("DorsageFormId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("QuantityOnHand")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReOrderLevel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Schedule")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Strength")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MedicationId");
+
+                    b.HasIndex("ActiveIngredientsActiveIngredientId");
+
+                    b.HasIndex("DorsageFormId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("Medication");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.MedicationActiveIngredient", b =>
+                {
+                    b.Property<int>("MedicationActiveIngredientId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationActiveIngredientId"));
+
+                    b.Property<int>("ActiveIngredientId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MedicationId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MedicationActiveIngredientId");
+
+                    b.HasIndex("ActiveIngredientId");
+
+                    b.HasIndex("MedicationId");
+
+                    b.ToTable("MedicationActiveIngredient");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.MedicationStockOrder", b =>
+                {
+                    b.Property<int>("MedicationStockOrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationStockOrderId"));
+
+                    b.Property<int>("MedicationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StockOrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MedicationStockOrderId");
+
+                    b.HasIndex("MedicationId");
+
+                    b.HasIndex("StockOrderId");
+
+                    b.ToTable("MedicationStockOrder");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.Pharmacist", b =>
+                {
+                    b.Property<int>("PharmacistId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PharmacistId"));
+
+                    b.Property<string>("Cellphone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HealthCouncil")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RegistrationNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Surname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("PharmacistId");
+
+                    b.ToTable("Pharmacist");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.Pharmacy", b =>
+                {
+                    b.Property<int>("PharmacyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PharmacyId"));
+
+                    b.Property<string>("ContactNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HealthCouncilRegistrationNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PharmacistId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhysicalAddress1")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhysicalAddress2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WebsiteUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("PharmacyId");
+
+                    b.HasIndex("PharmacistId");
+
+                    b.ToTable("Pharmacy");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.StockOrder", b =>
+                {
+                    b.Property<int>("StockOrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StockOrderId"));
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.HasKey("StockOrderId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("StockOrder");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.Supplier", b =>
+                {
+                    b.Property<int>("SupplierId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SupplierId"));
+
+                    b.Property<string>("ContactPerson")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SupplierName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("SupplierId");
+
+                    b.ToTable("Supplier");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -418,14 +674,109 @@ namespace PrescribingSystem.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("PrescribingSystem.Models.Medication", b =>
+                {
+                    b.HasOne("PrescribingSystem.Models.ActiveIngredients", null)
+                        .WithMany("Medications")
+                        .HasForeignKey("ActiveIngredientsActiveIngredientId");
+
+                    b.HasOne("PrescribingSystem.Models.DorsageForm", "DorsageForm")
+                        .WithMany()
+                        .HasForeignKey("DorsageFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PrescribingSystem.Models.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DorsageForm");
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.MedicationActiveIngredient", b =>
+                {
+                    b.HasOne("PrescribingSystem.Models.ActiveIngredients", "ActiveIngredient")
+                        .WithMany()
+                        .HasForeignKey("ActiveIngredientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PrescribingSystem.Models.Medication", "Medication")
+                        .WithMany("MedicationActiveIngredients")
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ActiveIngredient");
+
+                    b.Navigation("Medication");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.MedicationStockOrder", b =>
+                {
+                    b.HasOne("PrescribingSystem.Models.Medication", "Medication")
+                        .WithMany()
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PrescribingSystem.Models.StockOrder", "StockOrder")
+                        .WithMany("MedicationStockOrder")
+                        .HasForeignKey("StockOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Medication");
+
+                    b.Navigation("StockOrder");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.Pharmacy", b =>
+                {
+                    b.HasOne("PrescribingSystem.Models.Pharmacist", "Pharmacist")
+                        .WithMany()
+                        .HasForeignKey("PharmacistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Pharmacist");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.StockOrder", b =>
+                {
+                    b.HasOne("PrescribingSystem.Models.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Supplier");
+                });
+
             modelBuilder.Entity("PrescribingSystem.Models.ActiveIngredients", b =>
                 {
                     b.Navigation("CustomerAllergies");
+
+                    b.Navigation("Medications");
                 });
 
             modelBuilder.Entity("PrescribingSystem.Models.Customer", b =>
                 {
                     b.Navigation("CustomerAllergies");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.Medication", b =>
+                {
+                    b.Navigation("MedicationActiveIngredients");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.StockOrder", b =>
+                {
+                    b.Navigation("MedicationStockOrder");
                 });
 #pragma warning restore 612, 618
         }

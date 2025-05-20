@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
+
 namespace PrescribingSystem.Models
 {
     public class Medication
@@ -24,7 +25,6 @@ namespace PrescribingSystem.Models
 
         [ForeignKey(nameof(DorsageFormId))]
         public DorsageForm DorsageForm { get; set; }
-        
 
         [Required]
         [DataType(DataType.Currency)]
@@ -34,7 +34,7 @@ namespace PrescribingSystem.Models
         public int SupplierId { get; set; }
 
         [ForeignKey(nameof(SupplierId))]
-       public Supplier Supplier { get; set; }
+        public Supplier Supplier { get; set; }
 
         [Required]
         [Range(0, 100000)]
@@ -44,6 +44,21 @@ namespace PrescribingSystem.Models
         [Range(0, 1000000)]
         public int QuantityOnHand { get; set; }
 
+        //[Required]
+        //[Range(0.01, 10000, ErrorMessage = "Strength must be between 0.01 and 10000.")]
+        //public decimal Strength { get; set; }
+
         public bool Status { get; set; }
+
+        // Remove the single ActiveIngredientId and ActiveIngredient navigation property
+        // public int ActiveIngredientId { get; set; }
+        // public ActiveIngredients ActiveIngredient { get; set; }
+
+        // This represents many-to-many ActiveIngredients
+        public ICollection<MedicationActiveIngredient> MedicationActiveIngredients { get; set; } = new List<MedicationActiveIngredient>();
+        
     }
+
 }
+
+

@@ -372,6 +372,9 @@ namespace PrescribingSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationId"));
 
+                    b.Property<int?>("ActiveIngredientsActiveIngredientId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("CurrentSalesPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -400,11 +403,39 @@ namespace PrescribingSystem.Migrations
 
                     b.HasKey("MedicationId");
 
+                    b.HasIndex("ActiveIngredientsActiveIngredientId");
+
                     b.HasIndex("DorsageFormId");
 
                     b.HasIndex("SupplierId");
 
                     b.ToTable("Medication");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.MedicationActiveIngredient", b =>
+                {
+                    b.Property<int>("MedicationActiveIngredientId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationActiveIngredientId"));
+
+                    b.Property<int>("ActiveIngredientId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MedicationId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Strength")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("MedicationActiveIngredientId");
+
+                    b.HasIndex("ActiveIngredientId");
+
+                    b.HasIndex("MedicationId");
+
+                    b.ToTable("MedicationActiveIngredient");
                 });
 
             modelBuilder.Entity("PrescribingSystem.Models.MedicationStockOrder", b =>
@@ -417,6 +448,10 @@ namespace PrescribingSystem.Migrations
 
                     b.Property<int>("MedicationId")
                         .HasColumnType("int");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -642,6 +677,10 @@ namespace PrescribingSystem.Migrations
 
             modelBuilder.Entity("PrescribingSystem.Models.Medication", b =>
                 {
+                    b.HasOne("PrescribingSystem.Models.ActiveIngredients", null)
+                        .WithMany("Medications")
+                        .HasForeignKey("ActiveIngredientsActiveIngredientId");
+
                     b.HasOne("PrescribingSystem.Models.DorsageForm", "DorsageForm")
                         .WithMany()
                         .HasForeignKey("DorsageFormId")
@@ -659,18 +698,37 @@ namespace PrescribingSystem.Migrations
                     b.Navigation("Supplier");
                 });
 
+            modelBuilder.Entity("PrescribingSystem.Models.MedicationActiveIngredient", b =>
+                {
+                    b.HasOne("PrescribingSystem.Models.ActiveIngredients", "ActiveIngredient")
+                        .WithMany()
+                        .HasForeignKey("ActiveIngredientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PrescribingSystem.Models.Medication", "Medication")
+                        .WithMany("MedicationActiveIngredients")
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ActiveIngredient");
+
+                    b.Navigation("Medication");
+                });
+
             modelBuilder.Entity("PrescribingSystem.Models.MedicationStockOrder", b =>
                 {
                     b.HasOne("PrescribingSystem.Models.Medication", "Medication")
                         .WithMany()
                         .HasForeignKey("MedicationId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PrescribingSystem.Models.StockOrder", "StockOrder")
                         .WithMany("MedicationStockOrder")
                         .HasForeignKey("StockOrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Medication");
@@ -703,11 +761,18 @@ namespace PrescribingSystem.Migrations
             modelBuilder.Entity("PrescribingSystem.Models.ActiveIngredients", b =>
                 {
                     b.Navigation("CustomerAllergies");
+
+                    b.Navigation("Medications");
                 });
 
             modelBuilder.Entity("PrescribingSystem.Models.Customer", b =>
                 {
                     b.Navigation("CustomerAllergies");
+                });
+
+            modelBuilder.Entity("PrescribingSystem.Models.Medication", b =>
+                {
+                    b.Navigation("MedicationActiveIngredients");
                 });
 
             modelBuilder.Entity("PrescribingSystem.Models.StockOrder", b =>

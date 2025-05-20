@@ -42,7 +42,26 @@ namespace PrescribingSystem.Models.ViewModels
 
         [Display(Name = "Is Active?")]
         public bool Status { get; set; }
-        
+
+        // Removed this (conflicts with SelectedActiveIngredientIds):
+        // public int ActiveIngredientId { get; set; }
+
+        [Required(ErrorMessage = "Please select at least one active ingredient.")]
+        [Display(Name = "Active Ingredients")]
        
+        //public List<ActiveIngredients> ActiveIngredients { get; set; } = new();
+       
+      
+        //[Required]
+        //[Display(Name = "Strength")]
+        //[Range(0.01, 10000, ErrorMessage = "Strength must be between 0.01 and 10000.")]
+        //public decimal Strength { get; set; }
+        // This replaces the global Strength
+        public List<int> SelectedActiveIngredientIds { get; set; } = new List<int>();
+
+        // Dictionary: Key = ActiveIngredientId, Value = strength (string or decimal)
+        public Dictionary<int, string> ActiveIngredientStrengths { get; set; } = new Dictionary<int, string>();
+
     }
+
 }

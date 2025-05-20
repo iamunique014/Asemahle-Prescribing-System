@@ -13,6 +13,8 @@ namespace PrescribingSystem.Models
 
         // Navigation
         public ICollection<CustomerAllergy> CustomerAllergies { get; set; } = new List<CustomerAllergy>();
+        public ICollection<Medication> Medications { get; set; } = new List<Medication>(); // Optional reverse navigation
     }
+
 
 }

@@ -11,6 +11,7 @@ namespace PrescribingSystem.Data
         {
         }
         public DbSet<ActiveIngredients> ActiveIngredients { get; set; }
+        public DbSet<MedicationActiveIngredient> MedicationActiveIngredient { get; set; }
         public DbSet<Doctor> Doctor { get; set; }
         public DbSet<DorsageForm> DorsageForm { get; set; }
         public DbSet<Customer> Customer { get; set; }
@@ -21,36 +22,10 @@ namespace PrescribingSystem.Data
         public DbSet<Medication> Medication { get; set; }
         public DbSet<MedicationStockOrder> MedicationStockOrder { get; set; }
         public DbSet<StockOrder> StockOrder { get; set; }
+        
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
 
-            // Define relationship explicitly (optional if conventions are used)
-            modelBuilder.Entity<CustomerAllergy>()
-                .HasOne(ca => ca.Customer)
-                .WithMany(c => c.CustomerAllergies)
-                .HasForeignKey(ca => ca.CustomerId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<CustomerAllergy>()
-                .HasOne(ca => ca.ActiveIngredients)
-                .WithMany(ai => ai.CustomerAllergies)
-                .HasForeignKey(ca => ca.ActiveIngredientId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<MedicationStockOrder>()
-        .HasOne(mso => mso.StockOrder)
-        .WithMany(so => so.MedicationStockOrder)
-        .HasForeignKey(mso => mso.StockOrderId)
-        .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<MedicationStockOrder>()
-                .HasOne(mso => mso.Medication)
-                .WithMany()
-                .HasForeignKey(mso => mso.MedicationId)
-                .OnDelete(DeleteBehavior.Restrict);
-        }
     }
 
-}
+    }
+

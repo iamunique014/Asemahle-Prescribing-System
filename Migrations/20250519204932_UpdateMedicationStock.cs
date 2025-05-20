@@ -5,7 +5,7 @@
 namespace PrescribingSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class New : Migration
+    public partial class UpdateMedicationStock : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
