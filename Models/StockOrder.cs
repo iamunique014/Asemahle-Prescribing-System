@@ -14,7 +14,7 @@ namespace PrescribingSystem.Models
 
         [Required]
         [Display(Name = "Supplier")]
-        [ForeignKey("Supplier")]
+        [ForeignKey("SupplierId")]
         public int SupplierId { get; set; }
 
         [Required]

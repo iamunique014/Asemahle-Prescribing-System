@@ -1383,7 +1383,7 @@ namespace PrescribingSystem.Controllers
                 viewModel.Quantity[med.MedicationId] = 0;
             }
 
-            ViewBag.StockOrderId = new SelectList(_context.StockOrder, "StockOrderId", "OrderNumber");
+            ViewBag.StockOrderId = new SelectList(_context.StockOrder, "StockOrderId", "OrderDate");
             return View(viewModel);
         }
 
@@ -1407,14 +1407,25 @@ namespace PrescribingSystem.Controllers
 
             if (ModelState.IsValid)
             {
+                // ✅ Create new StockOrder with the generated OrderNumber
+                var newStockOrder = new StockOrder
+                {
+                    OrderNumber = model.OrderNumber,
+                    OrderDate = DateTime.Now // Or use another property if available
+                };
+
+                _context.StockOrder.Add(newStockOrder);
+                await _context.SaveChangesAsync(); // Save to get StockOrderId
+
+                // ✅ Create MedicationStockOrder entries for selected medications
                 foreach (var medicationId in model.SelectedMedicationIds)
                 {
                     int quantity = model.Quantity.ContainsKey(medicationId) ? model.Quantity[medicationId] : 0;
 
                     var stockOrder = new MedicationStockOrder
                     {
-                        OrderNumber = model.OrderNumber, // Use the generated one from GET
-                        StockOrderId = model.StockOrderId,
+                        OrderNumber = model.OrderNumber,
+                        StockOrderId = newStockOrder.StockOrderId, // Use newly saved ID
                         MedicationId = medicationId,
                         Quantity = quantity
                     };
@@ -1426,8 +1437,7 @@ namespace PrescribingSystem.Controllers
                 return RedirectToAction(nameof(IndexStockOrder));
             }
 
-            // Re-populate dropdowns and data
-            ViewBag.StockOrderId = new SelectList(_context.StockOrder, "StockOrderId", "OrderNumber", model.StockOrderId);
+            // Re-load Medications on error
             model.Medications = _context.Medication
                 .Include(m => m.DorsageForm)
                 .Include(m => m.Supplier)
@@ -1518,7 +1528,7 @@ namespace PrescribingSystem.Controllers
                 return NotFound();
 
             ViewData["MedicationId"] = new SelectList(_context.Medication, "MedicationId", "Name", order.MedicationId);
-            ViewData["StockOrderId"] = new SelectList(_context.StockOrder, "StockOrderId", "StockOrderId", order.StockOrderId);
+            //ViewData["StockOrderId"] = new SelectList(_context.StockOrder, "StockOrderId", "StockOrderId", order.StockOrderId);
             return View(order);
         }
 
@@ -1548,7 +1558,7 @@ namespace PrescribingSystem.Controllers
             }
 
             ViewData["MedicationId"] = new SelectList(_context.Medication, "MedicationId", "Name", order.MedicationId);
-            ViewData["StockOrderId"] = new SelectList(_context.StockOrder, "StockOrderId", "StockOrderId", order.StockOrderId);
+            //ViewData["StockOrderId"] = new SelectList(_context.StockOrder, "StockOrderId", "StockOrderId", order.StockOrderId);
             return View(order);
         }
 
