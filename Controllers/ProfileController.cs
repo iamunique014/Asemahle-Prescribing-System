@@ -2,15 +2,16 @@
 
 namespace PrescribingSystem.Controllers
 {
-    public class CustomerController : Controller
+    public class ProfileController : Controller
     {
-        public IActionResult CustomerCare()
+        public IActionResult Profile()
         {
             return View();
         }
-        public IActionResult Reports()
-        {
+        public IActionResult Registration() {
+
             return View();
         }
+
     }
 }
