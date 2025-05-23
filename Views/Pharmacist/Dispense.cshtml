@@ -1,0 +1,139 @@
+﻿@{
+    Layout = "_PharmacistLayout";
+}
+
+<div class="main-content">
+    <h3>Process Medication Orders</h3>
+
+    <button class="btn btn-primary" onclick="loadPrescription()">Open Prescription</button> <h6>Jane Doe- Order #001</h6>
+
+    <div class="row">
+        <div class="col-6">
+            <label class="control-label">Date Prescribed:</label>
+            <input class="form-control" type="date" />
+
+            <label class="control-label">Identity Number:</label>
+            <input class="form-control" />
+
+            <label class="control-label">Prescribed By:</label>
+            <div class="input-group">
+                <select class="form-select" aria-required="true">
+                    <option value="">Select Doctor</option>
+
+                </select>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#doctorModal">
+                    <i class="bi bi-plus" style="color: black;"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <h4>Select Medication</h4>
+
+            <label class="control-label">Medication:</label>
+            <select class="form-select" aria-required="true"></select>
+            <label class="control-label">Quantity:</label>
+            <select class="form-select" aria-required="true"></select>
+            <label class="control-label">Instructions:</label>
+            <input class="form-control" />
+            <button type="submit" name="action" value="addMedication" class="btn btn-primary">Add</button>
+        </div>
+    </div>
+
+    <h3>Selected Medication</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Quantity</th>
+                <th>Instruction</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Medication Name</td>
+                <td>Quantity</td>
+                <td>Instruction</td>
+            </tr>
+            <tr>
+                <td colspan="3">No medications added yet.</td>
+            </tr>
+
+        </tbody>
+    </table>
+    <input type="submit" name="action" value="Dispense" class="btn btn-danger" />
+    <input type="submit" name="action" value="Save" class="btn btn-dark" />
+
+    <div id="pdfContainer" style="display:none; position:fixed; top:0; right:0; width:35%; height:100vh; background:white; box-shadow:-4px 0 10px rgba(0,0,0,0.2); z-index:10050; overflow:hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f0f0f0;">
+            <h5 class="m-0">Medication Order</h5>
+            <button class="btn btn-sm btn-danger" onclick="closePdf()">Close</button>
+        </div>
+        <iframe id="pdfFrame" src="" width="100%" height="95%"></iframe>
+    </div>
+</div>
+
+
+<div class="modal fade" id="doctorModal" tabindex="-1" aria-labelledby="doctorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title" id="addDoctorsModalLabel">Add Doctors</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="grid-container">
+                    <div>
+                        <div class="form-group">
+                            <label class="control-label">First Name:</label>
+                            <input class="form-control" />
+                            <span class="text-danger"></span>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="control-label">Last Name:</label>
+                            <input class="form-control" />
+                            <span class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Contact Number:</label>
+                            <input class="form-control" />
+                            <span class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Practice Number:</label>
+                            <input class="form-control" />
+                            <span class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Email Address:</label>
+                            <input class="form-control" />
+                            <span class="text-danger"></span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" onclick="('Saved successfully!')">Save</button>
+                    <a asp-action="Dashboard" asp-controller="Home" class="button">Exit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadPrescription() {
+        const pdfUrl = '/css/Prescription.pdf';
+        document.getElementById('pdfFrame').src = pdfUrl;
+        document.getElementById('pdfContainer').style.display = 'block';
+        document.querySelector('.main-content').style.marginRight = '50%';
+    }
+
+    function closePdf() {
+        document.getElementById('pdfContainer').style.display = 'none';
+        document.getElementById('pdfFrame').src = '';
+        document.querySelector('.main-content').style.marginRight = '0';
+    }
+</script>

@@ -1,0 +1,76 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "_PharmacistLayout";
+}
+
+
+<body>
+    <h3> Doctors and Orders</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email Address</th>
+                <th>Contact Number</th>
+                <th>Practice Number</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Dr. Smith</td>
+                <td>smith@email.com</td>
+                <td>0123456789</td>
+                <td>PR123456</td>
+                <td><a asp-action="DoctorDetails" asp-controller="Pharmacist" class="link">view more</a></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><a asp-action="DoctorDetails" asp-controller="Pharmacist" class="link">view more</a></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><a asp-action="DoctorDetails" asp-controller="Pharmacist" class="link">view more</a></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><a asp-action="DoctorDetails" asp-controller="Pharmacist" class="link">view more</a></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><a asp-action="DoctorDetails" asp-controller="Pharmacist" class="link">view more</a></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><a asp-action="DoctorDetails" asp-controller="Pharmacist" class="link">view more</a></td>
+            </tr>
+            
+            @*This table must show doctor details and should lead to a pop up modal for uploading medication orders. View more button that shows all the *@
+        </tbody>
+    </table>
+
+    <a asp-action="Prescriptions" asp-controller="Pharmacist" class="btn btn-dark">Exit</a>
+</body>
+
+<script>
+
+</script>
+
+
