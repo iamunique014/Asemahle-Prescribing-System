@@ -56,7 +56,8 @@ namespace PrescribingSystem.Models
 
         // This represents many-to-many ActiveIngredients
         public ICollection<MedicationActiveIngredient> MedicationActiveIngredients { get; set; } = new List<MedicationActiveIngredient>();
-        
+        public ICollection<MedicationStockOrder> MedicationStockOrder { get; set; }
+
     }
 
 }

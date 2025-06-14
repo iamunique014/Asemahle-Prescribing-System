@@ -4,71 +4,110 @@
     ViewData["Title"] = "Medication List";
 }
 
-<h1>Medication Records</h1>
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-<div class="mb-3">
-    <a asp-action="AddMedication" class="btn btn-success">
-        <i class="fas fa-plus"></i> Add Medication
-    </a>
-    <a asp-action="Manager" class="btn btn-primary">
-        <i class="fas fa-arrow-left"></i> Back
-    </a>
-</div>
+<style>
+    .center-container {
+        max-width: 95%;
+        margin: auto;
+        padding: 30px;
+        border: 2px solid #343a40;
+        border-radius: 15px;
+        background-color: #212529;
+        color: white;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
 
-<table class="table table-dark table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Schedule</th>
-            <th>Dosage Form</th>
-            <th>Sales Price</th>
-            <th>Supplier</th>
-            <th colspan="2">Active Ingredients & Strength</th>
-          
-            <th>Re-order Level</th>
-            <th>Quantity on Hand</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+    .action-buttons {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .custom-input {
+        width: 200px;
+        height: 45px;
+        padding: 10px;
+        font-size: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    ul {
+        padding-left: 1rem;
+    }
+</style>
+
+<div class="center-container">
+    <h1>Medication Records</h1>
+
+    <div class="action-buttons">
+        <a asp-action="AddMedication" class="btn btn-success me-2">
+            <i class="fas fa-plus"></i> Add Medication
+        </a>
+        <a asp-action="Manager" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <table class="table table-bordered table-dark table-striped table-responsive">
+        <thead class="table-light text-dark">
             <tr>
-                <td>@item.Name</td>
-                <td>@item.Schedule</td>
-                <td>@item.DorsageForm.DorsageFormName</td>
-                <td>@item.CurrentSalesPrice.ToString("C")</td>
-                <td>@item.Supplier.SupplierName</td>
-                <td colspan="2">
-                    @if (item.MedicationActiveIngredients != null && item.MedicationActiveIngredients.Any())
-                    {
-                        <ul class="mb-0">
-                            @foreach (var ma in item.MedicationActiveIngredients)
-                            {
-                                <li>
-                                    @ma.ActiveIngredient.ActiveIngredientName - @ma.Strength
-                                </li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <em>No active ingredients</em>
-                    }
-                </td>
-
-                <!-- Null check -->
-                @* <td>@item.Strength</td>  *@                                 <!-- Strength display -->
-                <td>@item.ReOrderLevel</td>
-                <td>@item.QuantityOnHand</td>
-                <td>@(item.Status ? "Active" : "Inactive")</td>
-                <td>
-                    <a asp-action="EditMedication" asp-route-id="@item.MedicationId" class="btn btn-primary btn-sm">Edit</a>
-                    <a asp-action="MedicationDetails" asp-route-id="@item.MedicationId" class="btn btn-info btn-sm">Details</a>
-                    <a asp-action="DeleteMedication" asp-route-id="@item.MedicationId" class="btn btn-danger btn-sm">Delete</a>
-                </td>
+                <th>Name</th>
+                <th>Schedule</th>
+                <th>Dosage Form</th>
+                <th>Sales Price</th>
+                <th>Supplier</th>
+                <th colspan="2">Active Ingredients & Strength</th>
+                <th>Re-order Level</th>
+                <th>Quantity on Hand</th>
+                <th>Status</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Schedule</td>
+                    <td>@item.DorsageForm.DorsageFormName</td>
+                    <td>@item.CurrentSalesPrice.ToString("C")</td>
+                    <td>@item.Supplier.SupplierName</td>
+                    <td colspan="2">
+                        @if (item.MedicationActiveIngredients != null && item.MedicationActiveIngredients.Any())
+                        {
+                            <ul class="mb-0">
+                                @foreach (var ma in item.MedicationActiveIngredients)
+                                {
+                                    <li>
+                                        @ma.ActiveIngredient.ActiveIngredientName - @ma.Strength
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <em>No active ingredients</em>
+                        }
+                    </td>
+                    <td>@item.ReOrderLevel</td>
+                    <td>@item.QuantityOnHand</td>
+                    <td>@(item.Status ? "Active" : "Inactive")</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a asp-action="EditMedication" asp-route-id="@item.MedicationId" class="btn btn-primary btn-sm">Edit</a>
+                            <a asp-action="MedicationDetails" asp-route-id="@item.MedicationId" class="btn btn-info btn-sm">Details</a>
+                            <a asp-action="DeleteMedication" asp-route-id="@item.MedicationId" class="btn btn-danger btn-sm">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

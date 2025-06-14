@@ -22,10 +22,11 @@ namespace PrescribingSystem.Data
         public DbSet<Medication> Medication { get; set; }
         public DbSet<MedicationStockOrder> MedicationStockOrder { get; set; }
         public DbSet<StockOrder> StockOrder { get; set; }
-        
+        public DbSet<DeletedActiveIngredient> DeletedActiveIngredients { get; set; }
+
 
 
     }
 
-    }
+}
 

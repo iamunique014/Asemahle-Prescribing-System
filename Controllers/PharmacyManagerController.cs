@@ -24,6 +24,8 @@ namespace PrescribingSystem.Controllers
         {
             _context = context;
         }
+
+
         public async Task<IActionResult> NurseHome()
         {
             // Move to memory before grouping to avoid SQL translation issues
@@ -866,10 +868,9 @@ namespace PrescribingSystem.Controllers
         // GET: Pharmacy
         public async Task<IActionResult> IndexPharmacy()
         {
-            // Include the related Pharmacist data along with the Pharmacy
             var pharmacies = await _context.Pharmacy
-                                            .Include(p => p.Pharmacist) // Eager load Pharmacist data
-                                            .ToListAsync(); // Retrieve the list of pharmacies
+                                   .Include(p => p.Pharmacist)
+                                   .ToListAsync();
 
             return View(pharmacies);
         }
@@ -913,6 +914,7 @@ namespace PrescribingSystem.Controllers
                 "FullInfo",
                 pharmacy.PharmacistId
             );
+          
 
             return View(pharmacy);
         }
@@ -1227,11 +1229,21 @@ namespace PrescribingSystem.Controllers
         {
             if (id == null) return NotFound();
 
-            var medication = await _context.Medication.FindAsync(id);
+            var medication = await _context.Medication
+                .Include(m => m.MedicationActiveIngredients)
+                .FirstOrDefaultAsync(m => m.MedicationId == id);
+
             if (medication == null) return NotFound();
 
-            ViewData["DorsageFormId"] = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", medication.DorsageFormId);
-            ViewData["SupplierId"] = new SelectList(_context.Supplier, "SupplierId", "SupplierName", medication.SupplierId);
+            ViewBag.DorsageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", medication.DorsageFormId);
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", medication.SupplierId);
+            ViewBag.ActiveIngredients = new MultiSelectList(
+                _context.ActiveIngredients,
+                "ActiveIngredientId",
+                "ActiveIngredientName",
+                medication.MedicationActiveIngredients.Select(x => x.ActiveIngredientId)
+            );
+
             return View(medication);
         }
 
@@ -1239,74 +1251,120 @@ namespace PrescribingSystem.Controllers
         // POST: Medication/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditMedication(int id, Medication medication)
+        public async Task<IActionResult> EditMedication(int id, Medication medication, int[] selectedIngredients)
         {
-            if (id != medication.MedicationId) return NotFound();
+            if (id != medication.MedicationId)
+                return NotFound();
 
             if (ModelState.IsValid)
             {
-                _context.Update(medication);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    // Update Medication table
+                    _context.Update(medication);
+
+                    // Remove old ingredients
+                    var existingIngredients = _context.MedicationActiveIngredient
+                        .Where(m => m.MedicationId == id);
+                    _context.MedicationActiveIngredient.RemoveRange(existingIngredients);
+
+                    // Add new ingredients
+                    foreach (var ingredientId in selectedIngredients)
+                    {
+                        _context.MedicationActiveIngredient.Add(new MedicationActiveIngredient
+                        {
+                            MedicationId = medication.MedicationId,
+                            ActiveIngredientId = ingredientId
+                        });
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Medication.Any(e => e.MedicationId == id))
+                        return NotFound();
+                    else
+                        throw;
+                }
+                return RedirectToAction("IndexMedication");
             }
-            ViewData["DorsageFormId"] = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", medication.DorsageFormId);
-            ViewData["SupplierId"] = new SelectList(_context.Supplier, "SupplierId", "SupplierName", medication.SupplierId);
+
+            // Repopulate dropdowns
+            ViewBag.DorsageFormId = new SelectList(_context.DorsageForm, "DorsageFormId", "DorsageFormName", medication.DorsageFormId);
+            ViewBag.SupplierId = new SelectList(_context.Supplier, "SupplierId", "SupplierName", medication.SupplierId);
+            ViewBag.ActiveIngredients = new MultiSelectList(_context.ActiveIngredients, "ActiveIngredientId", "ActiveIngredientName", selectedIngredients);
+
             return View(medication);
         }
 
         // GET: Medication/Details/5
         public async Task<IActionResult> MedicationDetails(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
 
             var medication = await _context.Medication
-                .Include(m => m.DorsageFormId)
-                .Include(m => m.SupplierId)
+                .Include(m => m.DorsageForm)
+                .Include(m => m.Supplier)
+                .Include(m => m.MedicationActiveIngredients)
+                    .ThenInclude(ma => ma.ActiveIngredient)
                 .FirstOrDefaultAsync(m => m.MedicationId == id);
 
-            if (medication == null) return NotFound();
+            if (medication == null)
+            {
+                return NotFound();
+            }
 
             return View(medication);
         }
 
-        // GET: Medication/Delete/5
+       
         public async Task<IActionResult> DeleteMedication(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+                return NotFound();
 
             var medication = await _context.Medication
-                .Include(m => m.DorsageFormId)
-                .Include(m => m.SupplierId)
+                .Include(m => m.DorsageForm)
+                .Include(m => m.Supplier)
                 .FirstOrDefaultAsync(m => m.MedicationId == id);
 
-            if (medication == null) return NotFound();
+            if (medication == null)
+                return NotFound();
 
             return View(medication);
         }
-
-        // POST: Medication/Delete/5
+        // POST: ActiveIngredient/Delete/5
         [HttpPost, ActionName("DeleteMedication")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MedicationDeleteConfirmed(int id)
         {
-            var medication = await _context.Medication.FindAsync(id);
+            var medication = await _context.Medication
+         .Include(m => m.MedicationActiveIngredients)
+         .Include(m => m.MedicationActiveIngredients)
+         .Include(m => m.MedicationStockOrder)
+         .FirstOrDefaultAsync(m => m.MedicationId == id);
+
+            if (medication == null)
+                return NotFound();
+
+            // Remove related MedicationStockOrder entries
+            var relatedStockOrders = _context.MedicationStockOrder
+                .Where(mso => mso.MedicationId == id);
+            _context.MedicationStockOrder.RemoveRange(relatedStockOrders);
+
+            // Optionally remove related many-to-many MedicationActiveIngredients
+            _context.MedicationActiveIngredient.RemoveRange(medication.MedicationActiveIngredients);
+
             _context.Medication.Remove(medication);
             await _context.SaveChangesAsync();
-            return RedirectToAction("IndexMedication"); }
-        /// <summary>
-        /// /
-        /// </summary>
-        /// <returns></returns>
-        //public async Task<IActionResult> IndexStockOrder()
-        //{
-        //    var orders = await _context.StockOrder
-        //        .Include(s => s.Supplier)
-        //        .Include(s => s.MedicationStockOrder)
-        //        .ThenInclude(i => i.Medication)
-        //        .ToListAsync();
 
-        //    return View(orders);
-        //}
+            return RedirectToAction("IndexMedication");
+        }
+       
         public async Task<IActionResult> IndexStockOrder(DateTime? startDate, DateTime? endDate)
         {
             var orders = _context.StockOrder
@@ -1448,6 +1506,54 @@ namespace PrescribingSystem.Controllers
             return View(model);
         }
 
+     
+        // GET: StockOrder/DeleteMedicationStockOrder/5
+        public async Task<IActionResult> DeleteMedicationStockOrder(int? id)
+        {
+            if (id == null)
+                if (id == null) return NotFound();
+
+            var item = await _context.MedicationStockOrder
+                .Include(m => m.Medication)
+                .Include(m => m.StockOrder)
+                .FirstOrDefaultAsync(m => m.MedicationStockOrderId == id);
+
+            if (item == null) return NotFound();
+
+            return View(item);
+        }
+
+        [HttpPost, ActionName("DeleteMedicationStockOrder")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MedicationStockOrderDeleteConfirmed(int id)
+        {
+            var item = await _context.MedicationStockOrder.FindAsync(id);
+            if (item != null)
+            {
+                _context.MedicationStockOrder.Remove(item);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        public async Task<IActionResult> BulkDeleteMedicationStockOrders(int[] selectedIds)
+        {
+            if (selectedIds == null || selectedIds.Length == 0)
+            {
+                TempData["Message"] = "No records selected for deletion.";
+                return RedirectToAction("Index");
+            }
+
+            var items = _context.MedicationStockOrder.Where(m => selectedIds.Contains(m.MedicationStockOrderId));
+            _context.MedicationStockOrder.RemoveRange(items);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = $"{selectedIds.Length} records deleted successfully.";
+            return RedirectToAction("Index");
+        }
+
+
 
 
 
@@ -1562,36 +1668,36 @@ namespace PrescribingSystem.Controllers
             return View(order);
         }
 
-        // GET: MedicationStockOrders/Delete/5
-        public async Task<IActionResult> DeleteMedicationStockOrder(int? id)
-        {
-            if (id == null)
-                return NotFound();
+        //// GET: MedicationStockOrders/Delete/5
+        //public async Task<IActionResult> DeleteMedicationStockOrder(int? id)
+        //{
+        //    if (id == null)
+        //        return NotFound();
 
-            var order = await _context.MedicationStockOrder
-                .Include(m => m.Medication)
-                .Include(m => m.StockOrder)
-                .FirstOrDefaultAsync(m => m.MedicationStockOrderId == id);
+        //    var order = await _context.MedicationStockOrder
+        //        .Include(m => m.Medication)
+        //        .Include(m => m.StockOrder)
+        //        .FirstOrDefaultAsync(m => m.MedicationStockOrderId == id);
 
-            if (order == null)
-                return NotFound();
+        //    if (order == null)
+        //        return NotFound();
 
-            return View(order);
-        }
+        //    return View(order);
+        //}
 
-        // POST: MedicationStockOrders/Delete/5
-        [HttpPost, ActionName("DeleteMedicationStockOrder")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MedicationStockOrderDeleteConfirmed(int id)
-        {
-            var order = await _context.MedicationStockOrder.FindAsync(id);
-            if (order != null)
-            {
-                _context.MedicationStockOrder.Remove(order);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(IndexStockOrder));
-        }
+        //// POST: MedicationStockOrders/Delete/5
+        //[HttpPost, ActionName("DeleteMedicationStockOrder")]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> MedicationStockOrderDeleteConfirmed(int id)
+        //{
+        //    var order = await _context.MedicationStockOrder.FindAsync(id);
+        //    if (order != null)
+        //    {
+        //        _context.MedicationStockOrder.Remove(order);
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    return RedirectToAction(nameof(IndexStockOrder));
+        //}
 
 
         // GET: StockOrders

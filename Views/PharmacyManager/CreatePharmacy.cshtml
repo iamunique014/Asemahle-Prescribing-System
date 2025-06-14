@@ -4,73 +4,121 @@
     ViewData["Title"] = "Create Pharmacy";
 }
 
-<h1>Create Pharmacy</h1>
 
+<style>
+    .centered-form {
+        margin: 50px auto;
+        padding: 30px;
+        border: 2px solid #007bff;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+        width: 600px;
+        box-shadow: 0 0 15px rgba(0, 123, 255, 0.2);
+    }
+
+    .form-control {
+        height: 45px;
+        font-size: 16px;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    .form-title {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 24px;
+        color: #007bff;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .btn-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+</style>
 <hr />
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="CreatePharmacy" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="centered-form">
+    <div class="form-title">Create Pharmacy</div>
+    <form asp-action="CreatePharmacy" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="Name"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="HealthCouncilRegistrationNumber" class="control-label"></label>
-                <input asp-for="HealthCouncilRegistrationNumber" class="form-control" />
-                <span asp-validation-for="HealthCouncilRegistrationNumber" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="HealthCouncilRegistrationNumber"></label>
+            <input asp-for="HealthCouncilRegistrationNumber" class="form-control" />
+            <span asp-validation-for="HealthCouncilRegistrationNumber" class="text-danger"></span>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="PhysicalAddress1" class="control-label"></label>
-                <input asp-for="PhysicalAddress1" class="form-control" />
-                <span asp-validation-for="PhysicalAddress1" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="PhysicalAddress1"></label>
+            <input asp-for="PhysicalAddress1" class="form-control" />
+            <span asp-validation-for="PhysicalAddress1" class="text-danger"></span>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="PhysicalAddress2" class="control-label"></label>
-                <input asp-for="PhysicalAddress2" class="form-control" />
-                <span asp-validation-for="PhysicalAddress2" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="PhysicalAddress2"></label>
+            <input asp-for="PhysicalAddress2" class="form-control" />
+            <span asp-validation-for="PhysicalAddress2" class="text-danger"></span>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="ContactNumber" class="control-label"></label>
-                <input asp-for="ContactNumber" class="form-control" />
-                <span asp-validation-for="ContactNumber" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="ContactNumber"></label>
+            <input asp-for="ContactNumber" class="form-control" />
+            <span asp-validation-for="ContactNumber" class="text-danger"></span>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="WebsiteUrl" class="control-label"></label>
-                <input asp-for="WebsiteUrl" class="form-control" />
-                <span asp-validation-for="WebsiteUrl" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="WebsiteUrl"></label>
+            <input asp-for="WebsiteUrl" class="form-control" />
+            <span asp-validation-for="WebsiteUrl" class="text-danger"></span>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="PharmacistId" class="control-label"></label>
-                <select asp-for="PharmacistId" class="form-control" asp-items="ViewBag.Pharmacist"></select>
-                <span asp-validation-for="PharmacistId" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="PharmacistId"></label>
+            <select asp-for="PharmacistId" class="form-control" asp-items="ViewBag.Pharmacist"></select>
+            <span asp-validation-for="PharmacistId" class="text-danger"></span>
+        </div>
 
+        <div class="btn-group">
             <button type="submit" class="btn btn-primary">Create</button>
-        </form>
-    </div>
+            <a asp-action="IndexPharmacy" class="btn btn-secondary">Back to List</a>
+        </div>
+    </form>
 </div>
-<div>
-    <a asp-action="IndexPharmacy" class="btn btn-secondary">Back to List</a>
-</div>
+
 
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            // Popup message after successful creation
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.querySelector('form');
+                form.addEventListener('submit', function (e) {
+                    // Optional: Validate client-side before showing message
+                    setTimeout(() => {
+                        alert('Pharmacy created successfully!');
+                    }, 100); // Delay to allow form to post
+                });
+            });
+        </script>
     }
 }

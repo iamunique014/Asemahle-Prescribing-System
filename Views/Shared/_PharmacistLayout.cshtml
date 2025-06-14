@@ -4,13 +4,37 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>@ViewBag.Title</title>
+
+    <!-- Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
-    <link href="~/css/customerlayout.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="~/css/pharmaciststylesheet.css" rel="stylesheet" />
+
+    <!--JS (load jQuery FIRST) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!--Bootstrap Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!--Plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
 </head>
+
 <body>
     <nav class="sidebar close">
         <header>
@@ -21,65 +45,68 @@
 
                 <div class="text header-text">
                     <span class="name">Ibhayi Pharmacy</span>
-                    <span class="profession"></span>
+                    <span class="profession">Logged In User</span>
                 </div>
             </div>
             <i class='bx bx-chevron-right toggle'></i>
         </header>
 
-    <div class="menu-bar">
-        <div class="menu">
-            <ul class="menu-links">
-                <li class="nav-link">
-                    <a href="#">
-                        <i class='bx bx-home icon'></i>
-                        <span class="text nav-text"></span>
-                    </a>
-                </li>
-                <li class="nav-link">
-                    <a href="#">
-                        <i class='bx bx-cabinet icon'></i>
-                        <span class="text nav-text"></span>
-                    </a>
-                </li>
-                <li class="nav-link">
-                    <a href="#">
-                        <i class='bx bx-spreadsheet icon'></i>
-                        <span class="text nav-text"></span>
-                    </a>
-                </li>
-                <li class="nav-link">
-                    <a href="#">
-                        <i class='bx bx-home icon'></i>
-                        <span class="text nav-text"></span>
-                    </a>
-                </li>
-                <li class="nav-link">
-                    <a href="#">
-                        <i class='bx bxs-user-plus icon'></i>
-                        <span class="text nav-text"></span>
-                    </a>
-                </li>
-                <li class="nav-link">
-                        <a asp-controller="PharmacyManager" asp-action="ViewSurgeries" class="dashboard-nav-item active">
-                        <i class='bx bx-calendar-event icon'></i>
-                        <span class="text nav-text"></span>
-                    </a>
-                </li>
-                <li class="nav-link">
-                    <a href="#">
-                        <i class='bx bxs-report icon'></i>
-                        <span class="text nav-text"></span>
-                    </a>
-                </li>
-            </ul>
+        <div class="menu-bar">
+            <div class="menu">
+                <ul class="menu-links">
+                    <li class="nav-link">
+                        <a href="#">
+                            <i class='bx bx-home icon'></i>
+                            <span class="text nav-text"></span>
+                        </a>
+                    </li>
+
+                    <li class="nav-link">
+                        <a asp-action="Prescriptions" asp-controller="Pharmacist">
+
+                            <span class="text nav-text">Medication Orders</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a asp-action="DispenseWalkIn" asp-controller="Pharmacist">
+
+                            <span class="text nav-text">Dispense</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a asp-action="LoadOrders" asp-controller="Pharmacist">
+
+                            <span class="text nav-text">Load Orders</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a asp-action="Report" asp-controller="Pharmacist">
+
+                            <span class="text nav-text">Reports</span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="#">
+
+                            <span class="text nav-text"></span>
+                        </a>
+                    </li>
+                    <li class="nav-link">
+                        <a href="#">
+
+                            <span class="text nav-text"></span>
+                        </a>
+                    </li>
+                </ul>
+
+            </div>
 
         </div>
-    </div>
     </nav>
 
-    <div style="margin-left:20%">
+    <div style="margin-left:20%; margin-top:1%">
         @RenderBody()
+        <div id="modalContainer"></div>
     </div>
 </body>
 </html>

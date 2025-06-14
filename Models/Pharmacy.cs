@@ -38,10 +38,9 @@ namespace PrescribingSystem.Models
 
         [Required]
         [Display(Name = "Responsible Pharmacist")]
-        [ForeignKey("PharmacistId")]
+        
         public int PharmacistId { get; set; }
-
-        // Navigation Property for the related Pharmacist
-        public virtual Pharmacist Pharmacist { get; set; }
+        [ForeignKey("PharmacistId")]
+        public virtual Pharmacist Pharmacist { get; set; } // If needed for reverse nav
     }
 }

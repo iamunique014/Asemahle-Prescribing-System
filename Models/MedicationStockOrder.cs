@@ -25,5 +25,7 @@ namespace PrescribingSystem.Models
         // Navigation properties
         public StockOrder StockOrder { get; set; }
         public Medication Medication { get; set; }
+       
+
     }
 }

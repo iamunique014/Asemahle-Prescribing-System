@@ -1,0 +1,118 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "_PharmacistLayout";
+}
+
+<div class="main-content">
+    <h2>Walk-In Customers</h2>
+
+    <div class="row">
+        <div class="col-6">
+            <label class="control-label">Customer Type:</label>
+            <select class="form-select" aria-required="true">
+                <option value="">Existing Customer</option>
+                <option value="">New Customer</option>
+            </select>
+
+            <label class="control-label">Find Customer:</label>
+            <select class="form-select" id="mySelect" placeholder="search...">
+                <option>Lingani</option>
+                <option>Nokwanda</option>
+                <option>Jane Doe</option>
+            </select>
+
+            <label class="control-label">First Name:</label>
+            <input class="form-control" />
+
+            <label class="control-label">Last Name:</label>
+            <input class="form-control" />
+        </div>
+
+
+        <div class="col-6">
+            <label class="control-label">Date Prescribed:</label>
+            <input class="form-control" type="date" />
+
+            <label class="control-label">Identity Number:</label>
+            <input class="form-control" />
+
+            <label class="control-label">Prescribed By:</label>
+            <div class="input-group">
+                <select class="form-select" aria-required="true">
+                    <option value="">Select Doctor</option>
+
+                </select>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#doctorModal">
+                    <i class="bi bi-plus"></i>
+                </button>
+            </div>
+
+            <label class="control-label">Allergies?:</label>
+            <input type="checkbox" id="allergiesToggle" class="form-check-input" onchange="toggleExtraField()" />
+
+            <div id="allergies" style="display:none;">
+                <div class="form-group">
+                    <select class="form-select" aria-required="true">
+                        <option value=""></option>
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <h4>Select Medication</h4>
+
+    <label class="control-label">Medication:</label>
+    <select class="form-select" aria-required="true"></select>
+    <label class="control-label">Quantity:</label>
+    <select class="form-select" aria-required="true"></select>
+    <label class="control-label">Instructions:</label>
+    <input class="form-control" />
+
+    <button type="submit" name="action" value="addMedication" class="btn btn-primary">Add</button>
+
+    <h3>Selected Medication</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Quantity</th>
+                <th>Instruction</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>MedicationName</td>
+                <td>Quantity</td>
+                <td>Instruction</td>
+            </tr>
+
+            <tr>
+                <td colspan="3">No medications added yet.</td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    <input type="submit" name="action" value="Dispense" class="btn btn-danger" />
+    <input type="submit" name="action" value="Save" class="btn btn-dark" onclick="alert('Saved successfully!')" />
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#mySelect').select2();
+    });
+
+    function toggleExtraField() {
+        const checkbox = document.getElementById('allergiesToggle');
+        const extraField = document.getElementById('allergies');
+
+        allergies.style.display = checkbox.checked ? 'block' : 'none';
+    }
+</script>

@@ -165,102 +165,114 @@
     var activeIngredients = ViewBag.ActiveIngredients as List<PrescribingSystem.Models.ActiveIngredients> ?? new List<PrescribingSystem.Models.ActiveIngredients>();
 }
 
-<h2>Create Medication</h2>
+<h2 class="text-center mb-4">Create Medication</h2>
 
-<form asp-action="AddMedication" method="post">
-    <div class="form-group">
-        <label asp-for="Name" class="control-label"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
-    </div>
+<div class="d-flex justify-content-center">
+    <form asp-action="AddMedication" method="post" class="border p-4 rounded shadow bg-light" style="width: 70%;">
+        <div class="form-group">
+            <label asp-for="Name" class="control-label"></label>
+            <input asp-for="Name" class="form-control custom-input" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="Schedule" class="control-label"></label>
-        <input asp-for="Schedule" class="form-control" />
-        <span asp-validation-for="Schedule" class="text-danger"></span>
-    </div>
+        <div class="form-group">
+            <label asp-for="Schedule" class="control-label"></label>
+            <input asp-for="Schedule" class="form-control custom-input" />
+            <span asp-validation-for="Schedule" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="CurrentSalesPrice" class="control-label"></label>
-        <input asp-for="CurrentSalesPrice" class="form-control" />
-        <span asp-validation-for="CurrentSalesPrice" class="text-danger"></span>
-    </div>
+        <div class="form-group">
+            <label asp-for="CurrentSalesPrice" class="control-label"></label>
+            <input asp-for="CurrentSalesPrice" class="form-control custom-input" />
+            <span asp-validation-for="CurrentSalesPrice" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="DorsageFormId" class="control-label"></label>
-        <select asp-for="DorsageFormId" class="form-control" asp-items="ViewBag.DosageFormId">
-            <option value="">-- Select Dosage Form --</option>
-        </select>
-        <span asp-validation-for="DorsageFormId" class="text-danger"></span>
-    </div>
+        <div class="form-group">
+            <label asp-for="DorsageFormId" class="control-label"></label>
+            <select asp-for="DorsageFormId" class="form-control custom-input" asp-items="ViewBag.DosageFormId">
+                <option value="">-- Select Dosage Form --</option>
+            </select>
+            <span asp-validation-for="DorsageFormId" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="SupplierId" class="control-label"></label>
-        <select asp-for="SupplierId" class="form-control" asp-items="ViewBag.SupplierId">
-            <option value="">-- Select Supplier --</option>
-        </select>
-        <span asp-validation-for="SupplierId" class="text-danger"></span>
-    </div>
+        <div class="form-group">
+            <label asp-for="SupplierId" class="control-label"></label>
+            <select asp-for="SupplierId" class="form-control custom-input" asp-items="ViewBag.SupplierId">
+                <option value="">-- Select Supplier --</option>
+            </select>
+            <span asp-validation-for="SupplierId" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="ReOrderLevel" class="control-label"></label>
-        <input asp-for="ReOrderLevel" class="form-control" />
-        <span asp-validation-for="ReOrderLevel" class="text-danger"></span>
-    </div>
+        <div class="form-group">
+            <label asp-for="ReOrderLevel" class="control-label"></label>
+            <input asp-for="ReOrderLevel" class="form-control custom-input" />
+            <span asp-validation-for="ReOrderLevel" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="QuantityOnHand" class="control-label"></label>
-        <input asp-for="QuantityOnHand" class="form-control" />
-        <span asp-validation-for="QuantityOnHand" class="text-danger"></span>
-    </div>
+        <div class="form-group">
+            <label asp-for="QuantityOnHand" class="control-label"></label>
+            <input asp-for="QuantityOnHand" class="form-control custom-input" />
+            <span asp-validation-for="QuantityOnHand" class="text-danger"></span>
+        </div>
 
-    <div class="row">
-        <!-- Active Ingredients (Left Side) -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <strong>Select Active Ingredients</strong>
+        <div class="row">
+            <!-- Active Ingredients -->
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <strong>Select Active Ingredients</strong>
+                    </div>
+                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                        @foreach (var ingredient in activeIngredients)
+                        {
+                            <div class="form-check">
+                                <input type="checkbox"
+                                       class="form-check-input active-ingredient-checkbox"
+                                       id="ingredient_@ingredient.ActiveIngredientId"
+                                       name="SelectedActiveIngredientIds"
+                                       value="@ingredient.ActiveIngredientId"
+                                       data-name="@ingredient.ActiveIngredientName" />
+                                <label class="form-check-label" for="ingredient_@ingredient.ActiveIngredientId">
+                                    @ingredient.ActiveIngredientName
+                                </label>
+                            </div>
+                        }
+                    </div>
                 </div>
-                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-                    @foreach (var ingredient in activeIngredients)
-                    {
-                        <div class="form-check">
-                            <input type="checkbox"
-                                   class="form-check-input active-ingredient-checkbox"
-                                   id="ingredient_@ingredient.ActiveIngredientId"
-                                   name="SelectedActiveIngredientIds"
-                                   value="@ingredient.ActiveIngredientId"
-                                   data-name="@ingredient.ActiveIngredientName" />
-                            <label class="form-check-label" for="ingredient_@ingredient.ActiveIngredientId">
-                                @ingredient.ActiveIngredientName
-                            </label>
-                        </div>
-                    }
+            </div>
+
+            <!-- Summary -->
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <strong>Selected Ingredients and Strengths</strong>
+                    </div>
+                    <div class="card-body">
+                        <ul id="selectedIngredientsSummaryList" class="list-group mt-3"></ul>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Summary (Right Side) -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <strong>Selected Ingredients and Strengths</strong>
-                </div>
-                <div class="card-body">
-                    <ul id="selectedIngredientsSummaryList" class="list-group mt-3"></ul>
-                </div>
-            </div>
+        <div class="form-group form-check mt-3">
+            <input asp-for="Status" class="form-check-input" />
+            <label asp-for="Status" class="form-check-label"></label>
         </div>
-    </div>
 
-    <div class="form-group form-check mt-3">
-        <input asp-for="Status" class="form-check-input" />
-        <label asp-for="Status" class="form-check-label"></label>
-    </div>
+        <div class="mt-4 d-flex justify-content-between">
+            <button type="submit" class="btn btn-success">Create</button>
+            <a asp-action="IndexMedication" class="btn btn-secondary">Back</a>
+        </div>
+    </form>
+</div>
 
-    <button type="submit" class="btn btn-success">Create</button>
-    <a asp-action="IndexMedication" class="btn btn-secondary">Back</a>
-</form>
+<style>
+    .custom-input {
+        height: 45px;
+        font-size: 1rem;
+        padding: 10px;
+    }
+</style>
 
 @section Scripts {
     <script>
@@ -301,3 +313,4 @@
         });
     </script>
 }
+

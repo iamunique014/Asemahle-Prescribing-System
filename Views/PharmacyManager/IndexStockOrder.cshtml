@@ -47,7 +47,10 @@
                                     <ul class="mb-0">
                                         @foreach (var item in order.MedicationStockOrder)
                                         {
-                                            <li>@item.Medication?.Name - Qty: @item.Quantity</li>
+                                            <li class="d-flex align-items-center">
+                                                <input type="checkbox" name="selectedMedications" value="@item.MedicationStockOrderId" class="form-check-input me-2" />
+                                                <span>@item.Medication?.Name - Qty: @item.Quantity</span>
+                                            </li>
                                         }
                                     </ul>
 
@@ -75,6 +78,7 @@
                                         </a>
                                     </div>
                                 </td>
+
                             </tr>
                         }
                     </tbody>

@@ -4,32 +4,42 @@
     ViewData["Title"] = "Add Active Ingredient";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="border p-4 rounded shadow bg-light">
+                <h2 class="text-center text-primary mb-4">@ViewData["Title"]</h2>
 
-<h4>Active Ingredient Details</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="AddActiveIngredient">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="ActiveIngredientName" class="control-label"></label>
-                <input asp-for="ActiveIngredientName" class="form-control" />
-                <span asp-validation-for="ActiveIngredientName" class="text-danger"></span>
+                <form asp-action="AddActiveIngredient" onsubmit="return showSuccessPopup()">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="ActiveIngredientName" class="form-label"></label>
+                        <input asp-for="ActiveIngredientName" id="activeIngredientName" class="form-control" style="width: 90%;" />
+                        <span asp-validation-for="ActiveIngredientName" class="text-danger"></span>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success">Save</button>
+                        <a asp-action="Index" class="btn btn-secondary ms-2">Back</a>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-</div>
-
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        function showSuccessPopup() {
+            const input = document.getElementById("activeIngredientName").value.trim();
+            if (input === "") {
+                return false; // prevent submission if empty
+            }
+
+            alert("Active Ingredient has been saved successfully!");
+            return true;
+        }
+    </script>
 }
