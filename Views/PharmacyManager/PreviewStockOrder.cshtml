@@ -1,0 +1,54 @@
+﻿@model PrescribingSystem.Models.StockOrder
+
+@{
+    ViewData["Title"] = "Preview Stock Order";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Stock Order Preview - @Model.OrderNumber</h4>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p><strong>Supplier:</strong> @Model.Supplier?.SupplierName</p>
+                        <p><strong>Order Date:</strong> @Model.OrderDate.ToShortDateString()</p>
+                    </div>
+
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Medication</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.MedicationStockOrder)
+                            {
+                                <tr>
+                                    <td>@item.Medication?.Name</td>
+                                    <td>@item.Quantity</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card-footer d-flex justify-content-between flex-wrap gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-primary">
+                        🖨️ Print
+                    </button>
+                    <a asp-action="ExportStockOrderToPdf" asp-route-id="@Model.StockOrderId" class="btn btn-secondary">
+                        📄 Download PDF
+                    </a>
+                    <a asp-action="IndexStockOrder" class="btn btn-secondary">
+                        🔙 Back
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

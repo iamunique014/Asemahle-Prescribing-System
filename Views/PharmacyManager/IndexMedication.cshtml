@@ -98,7 +98,9 @@
                     </td>
                     <td>@item.ReOrderLevel</td>
                     <td>@item.QuantityOnHand</td>
-                    <td>@(item.Status ? "Active" : "Inactive")</td>
+                    <td>@(item.Status ? "Available" : "Unavailable")</td>
+
+                    @* <td>@(item.Status ? "Active" : "Inactive")</td> *@
                     <td>
                         <div class="btn-group" role="group">
                             <a asp-action="EditMedication" asp-route-id="@item.MedicationId" class="btn btn-primary btn-sm">Edit</a>

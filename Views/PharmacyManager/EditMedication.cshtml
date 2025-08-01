@@ -60,10 +60,15 @@
                     <select name="selectedIngredients" multiple class="form-select" asp-items="ViewBag.ActiveIngredients"></select>
                 </div>
 
-                <div class="mb-3 form-check">
-                    <input asp-for="Status" class="form-check-input" />
-                    <label asp-for="Status" class="form-check-label"></label>
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label">Availability Status</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="true" selected="@Model.Status">Available</option>
+                        <option value="false" selected="@(!Model.Status)">Unavailable</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
                 </div>
+
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Save Changes</button>

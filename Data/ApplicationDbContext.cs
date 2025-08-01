@@ -10,6 +10,8 @@ namespace PrescribingSystem.Data
             : base(options)
         {
         }
+    
+        public DbSet<DeletedDoctor> DeletedDoctors { get; set; }
         public DbSet<ActiveIngredients> ActiveIngredients { get; set; }
         public DbSet<MedicationActiveIngredient> MedicationActiveIngredient { get; set; }
         public DbSet<Doctor> Doctor { get; set; }
@@ -23,6 +25,11 @@ namespace PrescribingSystem.Data
         public DbSet<MedicationStockOrder> MedicationStockOrder { get; set; }
         public DbSet<StockOrder> StockOrder { get; set; }
         public DbSet<DeletedActiveIngredient> DeletedActiveIngredients { get; set; }
+        public DbSet<ApprovalLog> ApprovalLogs { get; set; }
+        public DbSet<ApprovedOrder> ApprovedOrders { get; set; }
+        public DbSet<ApprovedMedicationItem> ApprovedMedicationItems { get; set; }
+
+
 
 
 

@@ -1,17 +1,25 @@
-﻿using iTextSharp.text.pdf;
-using iTextSharp.text;
+﻿using iTextSharp.text;
+using iTextSharp.text.pdf;
+using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MimeKit;
+using OfficeOpenXml;
 using PrescribingSystem.Data;
 using PrescribingSystem.Models;
-using System.Linq;
-using OfficeOpenXml;
 using PrescribingSystem.Models.ViewModels;
+using System.Linq;
+using System.Net;
 using System.Net.Mail;
-using System.Text;
 using System.Reflection.Metadata;
+using System.Text;
 using Document = iTextSharp.text.Document;
+
 
 
 
@@ -20,9 +28,16 @@ namespace PrescribingSystem.Controllers
     public class PharmacyManagerController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public PharmacyManagerController(ApplicationDbContext context)
+        private readonly SmtpSettings _smtpSettings;
+        private readonly UserManager<ApplicationUser> _userManager;
+       
+
+        public PharmacyManagerController(ApplicationDbContext  context, SmtpSettings smtpSettings, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _smtpSettings = smtpSettings;
+            _userManager = userManager;
+            
         }
 
 
@@ -438,6 +453,33 @@ namespace PrescribingSystem.Controllers
             }
             return View(Doctor);
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SoftDeleteDoctor(int id)
+        {
+            var doctor = await _context.Doctor.FindAsync(id);
+            if (doctor == null)
+            {
+                return NotFound();
+            }
+
+            // Move to DeletedDoctor table
+            var deletedDoctor = new DeletedDoctor
+            {
+                Name = doctor.Name,
+                Surname = doctor.Surname,
+                Practice_Number = doctor.Practice_Number,
+                Email = doctor.Email
+            };
+
+            _context.DeletedDoctors.Add(deletedDoctor);
+            _context.Doctor.Remove(doctor);
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Doctor successfully removed and archived.";
+            return RedirectToAction(nameof(IndexDoctor));
+        }
+
 
         // GET: ActiveIngredient/Edit/5
         public async Task<IActionResult> EditDoctor(int? id)
@@ -522,14 +564,7 @@ namespace PrescribingSystem.Controllers
 
             return RedirectToAction(nameof(IndexDoctor));
         }
-        //End of doctors //
-
-        /// <summary>
-        /// ////////
-        /// </summary>
-        /// <returns></returns>
-
-        // GET: CustomerAllergy
+        
         public async Task<IActionResult> IndexCustomerAllergy()
         {
             var allergies = _context.CustomerAllergy
@@ -739,13 +774,7 @@ namespace PrescribingSystem.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(IndexDorsageForm));
         }
-        /// <summary>
-        /// 
-        /// </summary>
-       
-        /// <returns></returns>
-        /// 
-        // GET: Pharmacist
+        
         public async Task<IActionResult> IndexPharmacist()
         {
             return View(await _context.Pharmacist.ToListAsync());
@@ -859,13 +888,7 @@ namespace PrescribingSystem.Controllers
             return RedirectToAction(nameof(IndexPharmacist));
 
         }
-        /// <summary>
-        /// 
-
-        /// <returns></returns>
-        /// 
-        // GET: Pharmacy/Create
-        // GET: Pharmacy
+        
         public async Task<IActionResult> IndexPharmacy()
         {
             var pharmacies = await _context.Pharmacy
@@ -919,10 +942,6 @@ namespace PrescribingSystem.Controllers
             return View(pharmacy);
         }
 
-
-
-
-        // GET: Pharmacy/Edit/5
         // GET: Pharmacy/Edit/5
         public async Task<IActionResult> EditPharmacy(int? id)
         {
@@ -1139,7 +1158,7 @@ namespace PrescribingSystem.Controllers
             var medicationSupplier = await _context.Supplier.FindAsync(id);
             _context.Supplier.Remove(medicationSupplier);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(IndexSupplier));
         }
         // GET: Medication/Index
        
@@ -1218,12 +1237,6 @@ namespace PrescribingSystem.Controllers
 
             return View(model);
         }
-
-
-
-
-
-
         // GET: Medication/Edit/5
         public async Task<IActionResult> EditMedication(int? id)
         {
@@ -1364,24 +1377,316 @@ namespace PrescribingSystem.Controllers
 
             return RedirectToAction("IndexMedication");
         }
-       
-        public async Task<IActionResult> IndexStockOrder(DateTime? startDate, DateTime? endDate)
+        public IActionResult PreviewStockOrder(int id)
         {
-            var orders = _context.StockOrder
+            var order = _context.StockOrder
+                .Include(o => o.Supplier)
+                .Include(o => o.MedicationStockOrder)
+                .ThenInclude(mso => mso.Medication)
+                .FirstOrDefault(o => o.StockOrderId == id);
+
+            if (order == null)
+                return NotFound();
+
+            return View(order); // Make sure you have Views/StockOrder/PreviewStockOrder.cshtml
+        }
+       
+        public async Task<IActionResult> ListApprovedOrders()
+        {
+            var approvedOrders = await _context.ApprovedOrders
+                .Include(a => a.MedicationItems)
+                .ToListAsync();
+
+            return View(approvedOrders);
+        }
+        
+
+        [HttpPost]
+        public async Task<IActionResult> MarkOrderAsReceived(int id)
+        {
+            var approvedOrder = await _context.ApprovedOrders.FindAsync(id);
+
+            if (approvedOrder == null)
+            {
+                TempData["ErrorMessage"] = "Approved order not found.";
+                return RedirectToAction("ApprovedOrders");
+            }
+
+            approvedOrder.IsReceived = true;
+            approvedOrder.ReceivedAt = DateTime.Now;
+
+            _context.Update(approvedOrder);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Order {approvedOrder.OrderNumber} marked as received.";
+            return RedirectToAction("ApprovedOrders");
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitGroupedMedicationStock(List<SubmitGroupedMedicationViewModel> groupedMedications)
+        {
+            foreach (var group in groupedMedications)
+            {
+                var medications = await _context.Medication
+                    .Where(m => group.MedicationsIds.Contains(m.MedicationId))
+                    .ToListAsync();
+
+                var orderNumber = $"ORD-{DateTime.Now:yyyyMMddHHmmssfff}-{group.SupplierId}";
+
+                var stockOrder = new StockOrder
+                {
+                    SupplierId = group.SupplierId,
+                    OrderNumber = orderNumber,
+                    OrderDate = DateTime.Now,
+                    Status = false
+                };
+
+                _context.StockOrder.Add(stockOrder);
+                await _context.SaveChangesAsync();
+
+                foreach (var med in medications)
+                {
+                    _context.MedicationStockOrder.Add(new MedicationStockOrder
+                    {
+                        StockOrderId = stockOrder.StockOrderId,
+                        MedicationId = med.MedicationId,
+                        Quantity = 0
+                    
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ListMedicationStock");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmMedicationStock(StockOrderCreateViewModel viewModel)
+        {
+            if (viewModel.SelectedMedicationIds == null || viewModel.SelectedMedicationIds.Count == 0)
+            {
+                ModelState.AddModelError("", "Please select at least one medication.");
+
+                viewModel.Medications = await _context.Medication
+                    .Include(m => m.DorsageForm)
+                    .Include(m => m.Supplier)
+                    .ToListAsync();
+
+                viewModel.Supplier = await _context.Supplier
+                    .FirstOrDefaultAsync(s => s.SupplierId == viewModel.SupplierId);
+
+                return View("AddMedicationStock", viewModel);
+            }
+
+            // Fetch selected medications
+            var selectedMedications = await _context.Medication
+                .Where(m => viewModel.SelectedMedicationIds.Contains(m.MedicationId))
+                .Include(m => m.DorsageForm)
+                .Include(m => m.Supplier)
+                .ToListAsync();
+
+            // Assign selected medications and supplier
+            viewModel.Medications = selectedMedications;
+            viewModel.Supplier = await _context.Supplier
+                .FirstOrDefaultAsync(s => s.SupplierId == viewModel.SupplierId);
+
+            return View("ConfirmGroupedMedicationStock", viewModel);
+        }
+
+
+        public async Task<IActionResult> IndexStockOrder(DateTime? startDate, DateTime? endDate, string searchOrderNumber)
+        {
+            ViewBag.CurrentFilter = searchOrderNumber;
+
+            // Get pending orders
+            var pendingOrdersQuery = _context.StockOrder
                 .Include(s => s.Supplier)
                 .Include(s => s.MedicationStockOrder)
-                .ThenInclude(i => i.Medication)
+                    .ThenInclude(i => i.Medication)
+                .Where(o => !o.Status)
                 .AsQueryable();
 
+            // Apply filters to pending orders
             if (startDate.HasValue)
-                orders = orders.Where(o => o.OrderDate >= startDate.Value.Date);
+                pendingOrdersQuery = pendingOrdersQuery.Where(o => o.OrderDate >= startDate.Value.Date);
 
             if (endDate.HasValue)
-                orders = orders.Where(o => o.OrderDate <= endDate.Value.Date);
+                pendingOrdersQuery = pendingOrdersQuery.Where(o => o.OrderDate <= endDate.Value.Date);
 
-            var result = await orders.ToListAsync();
-            return View(result);
+            if (!string.IsNullOrWhiteSpace(searchOrderNumber))
+                pendingOrdersQuery = pendingOrdersQuery.Where(o =>
+                    o.OrderNumber.ToLower().Contains(searchOrderNumber.Trim().ToLower()));
+
+            var pendingOrders = await pendingOrdersQuery.ToListAsync();
+
+
+            // Get approved orders
+            var approvedOrdersQuery = _context.ApprovedOrders
+                .Include(a => a.MedicationItems)
+                .AsQueryable();
+
+            // Apply filters to approved orders
+            if (startDate.HasValue)
+                approvedOrdersQuery = approvedOrdersQuery.Where(a => a.OrderDate >= startDate.Value.Date);
+
+            if (endDate.HasValue)
+                approvedOrdersQuery = approvedOrdersQuery.Where(a => a.OrderDate <= endDate.Value.Date);
+
+            if (!string.IsNullOrWhiteSpace(searchOrderNumber))
+                approvedOrdersQuery = approvedOrdersQuery.Where(a =>
+                    a.OrderNumber.ToLower().Contains(searchOrderNumber.Trim().ToLower()));
+
+            var approvedOrders = await approvedOrdersQuery.ToListAsync();
+
+            var viewModel = Tuple.Create<IEnumerable<StockOrder>, IEnumerable<ApprovedOrder>>(pendingOrders, approvedOrders);
+            return View(viewModel);
         }
+        public async Task<IActionResult> ApprovedOrders(string filter, string search)
+        {
+            var approvedOrders = await _context.ApprovedOrders
+                .Include(o => o.MedicationItems)
+                .ToListAsync();
+
+            // Search by OrderNumber (case-insensitive)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                approvedOrders = approvedOrders
+                    .Where(o => o.OrderNumber.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            var viewModel = new ApprovedOrderListViewModel
+            {
+                ReceivedOrders = approvedOrders.Where(o => o.IsReceived).ToList(),
+                NotReceivedOrders = approvedOrders.Where(o => !o.IsReceived).ToList()
+            };
+
+            ViewBag.Filter = filter;
+            ViewBag.Search = search;
+
+            return View(viewModel);
+        }
+
+        //public async Task<IActionResult> ApprovedOrders(string filter)
+        //{
+        //    var approvedOrders = await _context.ApprovedOrders
+        //        .Include(o => o.MedicationItems)
+        //        .ToListAsync();
+
+        //    var viewModel = new ApprovedOrderListViewModel
+        //    {
+        //        ReceivedOrders = approvedOrders.Where(o => o.IsReceived).ToList(),
+        //        NotReceivedOrders = approvedOrders.Where(o => !o.IsReceived).ToList()
+        //    };
+
+        //    ViewBag.Filter = filter;
+
+        //    return View(viewModel);
+        //}
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveStockOrder2(int id)
+        {
+            var pharmacy = await _context.Pharmacy
+    .Include(p => p.Pharmacist)
+    .FirstOrDefaultAsync();
+            // Get current user
+            var currentUser = await _userManager.GetUserAsync(User);
+            var fullName = currentUser != null
+                ? $"{currentUser.FirstName} {currentUser.LastName}".Trim()
+                : "System";
+
+            // Fetch the stock order and related data
+            var order = await _context.StockOrder
+                .Include(o => o.MedicationStockOrder)
+                    .ThenInclude(mso => mso.Medication)
+                .Include(o => o.Supplier)
+                .FirstOrDefaultAsync(o => o.StockOrderId == id);
+
+            if (order == null)
+            {
+                TempData["ErrorMessage"] = "Stock order not found.";
+                return RedirectToAction("IndexStockOrder");
+            }
+
+            if (order.Status)
+            {
+                TempData["ErrorMessage"] = "Order already approved.";
+                return RedirectToAction("IndexStockOrder");
+            }
+
+            try
+            {
+                // Approve the order
+                order.Status = true;
+                order.ApprovedBy = fullName;
+                order.ApprovedAt = DateTime.Now;
+                order.ReceivedDate= DateTime.Now;
+                
+
+                // Update medication quantities
+                foreach (var item in order.MedicationStockOrder)
+                {
+                    item.Medication.QuantityOnHand += item.Quantity;
+                }
+
+                // Log approved order
+                var approvedOrder = new ApprovedOrder
+                {
+                    OrderNumber = order.OrderNumber,
+                    OrderDate = order.OrderDate,
+                    ApprovedBy = fullName,
+                    ApprovedDate = DateTime.Now, // ✅ set explicitly
+                    ApprovedAt = DateTime.Now,   // optionally keep both
+                    MedicationItems = order.MedicationStockOrder.Select(m => new ApprovedMedicationItem
+                    {
+                        MedicationName = m.Medication.Name,
+                        Quantity = m.Quantity
+                    }).ToList()
+                };
+
+
+                _context.ApprovedOrders.Add(approvedOrder);
+
+                await _context.SaveChangesAsync();
+
+                // Send confirmation email
+                if (!string.IsNullOrEmpty(order.Supplier?.Email))
+                {
+                    try
+                    {
+                        var medicationList = order.MedicationStockOrder
+    .Select(m => (m.Medication.Name, m.Quantity))
+    .ToList();
+
+                        await SendApprovalConfirmationEmailAsync(toEmail: "supplier@example.com",
+    stockOrderNumber: "ORD-1234",
+    supplierName: "ABC Med Supplies",
+    medications: medicationList,
+    pharmacy: pharmacy);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        TempData["WarningMessage"] = $"Order approved, but failed to send email: {ex.Message}";
+                    }
+                }
+                else
+                {
+                    TempData["WarningMessage"] = "Order approved, but supplier email not found.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error while approving stock order: {ex.Message}";
+            }
+
+            return RedirectToAction("IndexStockOrder");
+        }
+
 
         // GET: StockOrders/Create
         public IActionResult AddStock()
@@ -1407,7 +1712,7 @@ namespace PrescribingSystem.Controllers
                 var stockOrder = new StockOrder
                 {
                     OrderNumber = viewModel.OrderNumber ?? $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
-                    SupplierId = viewModel.SupplierId,
+                    /*SupplierId = viewModel.SupplierId*/
                     OrderDate = viewModel.OrderDate,
                     Status = viewModel.Status
                 };
@@ -1423,90 +1728,168 @@ namespace PrescribingSystem.Controllers
 
         public IActionResult AddMedicationStock()
         {
-            var generatedOrderNumber = $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
-
             var viewModel = new StockOrderCreateViewModel
             {
-                OrderNumber = generatedOrderNumber,
+                OrderNumber = $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
                 Medications = _context.Medication
                     .Include(m => m.DorsageForm)
                     .Include(m => m.Supplier)
-                    .Include(m => m.MedicationActiveIngredients)
-                        .ThenInclude(ma => ma.ActiveIngredient)
                     .ToList()
             };
 
-            foreach (var med in viewModel.Medications)
-            {
-                viewModel.Quantity[med.MedicationId] = 0;
-            }
-
-            ViewBag.StockOrderId = new SelectList(_context.StockOrder, "StockOrderId", "OrderDate");
             return View(viewModel);
         }
 
-
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddMedicationStock(StockOrderCreateViewModel model)
+        public async Task<IActionResult> AddMedicationStock(AddMedicationStockViewModel viewModel)
         {
-            if (model.SelectedMedicationIds == null || !model.SelectedMedicationIds.Any())
+            if (viewModel.SelectedMedicationIds == null || !viewModel.SelectedMedicationIds.Any())
             {
-                if (!string.IsNullOrWhiteSpace(Request.Form["SelectedMedicationIds"]))
-                {
-                    model.SelectedMedicationIds = Request.Form["SelectedMedicationIds"]
-                        .ToString()
-                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(int.Parse)
-                        .ToList();
-                }
+                ModelState.AddModelError("", "Please select at least one medication.");
+                viewModel.Medications = await _context.Medication
+                    .Include(m => m.DorsageForm)
+                    .Include(m => m.Supplier)
+                    .ToListAsync();
+                viewModel.Suppliers = new SelectList(_context.Supplier, "SupplierId", "SupplierName");
+                return View(viewModel);
             }
 
-            if (ModelState.IsValid)
-            {
-                // ✅ Create new StockOrder with the generated OrderNumber
-                var newStockOrder = new StockOrder
-                {
-                    OrderNumber = model.OrderNumber,
-                    OrderDate = DateTime.Now // Or use another property if available
-                };
-
-                _context.StockOrder.Add(newStockOrder);
-                await _context.SaveChangesAsync(); // Save to get StockOrderId
-
-                // ✅ Create MedicationStockOrder entries for selected medications
-                foreach (var medicationId in model.SelectedMedicationIds)
-                {
-                    int quantity = model.Quantity.ContainsKey(medicationId) ? model.Quantity[medicationId] : 0;
-
-                    var stockOrder = new MedicationStockOrder
-                    {
-                        OrderNumber = model.OrderNumber,
-                        StockOrderId = newStockOrder.StockOrderId, // Use newly saved ID
-                        MedicationId = medicationId,
-                        Quantity = quantity
-                    };
-
-                    _context.MedicationStockOrder.Add(stockOrder);
-                }
-
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(IndexStockOrder));
-            }
-
-            // Re-load Medications on error
-            model.Medications = _context.Medication
-                .Include(m => m.DorsageForm)
+            // Fetch selected medications
+            var selectedMedications = await _context.Medication
+                .Where(m => viewModel.SelectedMedicationIds.Contains(m.MedicationId))
                 .Include(m => m.Supplier)
-                .Include(m => m.MedicationActiveIngredients)
-                    .ThenInclude(ma => ma.ActiveIngredient)
+                .ToListAsync();
+
+            // Group medications by SupplierId
+            var groupedBySupplier = selectedMedications
+                .GroupBy(m => m.SupplierId)
                 .ToList();
 
-            return View(model);
+            foreach (var group in groupedBySupplier)
+            {
+                var supplierId = group.Key;
+                var orderNumber = $"ORD-{DateTime.Now:yyyyMMddHHmmssfff}-{supplierId}";
+
+                var stockOrder = new StockOrder
+                {
+                    SupplierId = supplierId,
+                    OrderNumber = orderNumber,
+                    OrderDate = DateTime.Now,
+                    Status = false
+                };
+
+                _context.StockOrder.Add(stockOrder);
+                await _context.SaveChangesAsync(); // Save to get StockOrderId
+
+                foreach (var medication in group)
+                {
+                    var medicationStockOrder = new MedicationStockOrder
+                    {
+                        StockOrderId = stockOrder.StockOrderId,
+                        MedicationId = medication.MedicationId,
+                        OrderNumber = stockOrder.OrderNumber,
+                        Quantity = viewModel.Quantity.TryGetValue(medication.MedicationId, out var qty) ? qty : 0
+                    };
+
+                    _context.MedicationStockOrder.Add(medicationStockOrder);
+                }
+
+            }
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("IndexStockOrder");
         }
 
-     
+        private async Task SendApprovalConfirmationEmailAsync(string toEmail,
+    string stockOrderNumber,
+    string supplierName,
+    List<(string MedicationName, int Quantity)> medications,
+    Pharmacy pharmacy)
+        {
+            var medicationDetails = new StringBuilder();
+
+            foreach (var med in medications)
+            {
+                medicationDetails.AppendLine($"<li>{med.MedicationName}: {med.Quantity}</li>");
+            }
+
+            string logoUrl = "http://localhost:5000/images/approved.png";
+            // ✅ Hosted logo
+            string stampUrl = "https://images.app.goo.gl/6VubmsV1rtpXZjtp9"; // ✅ Hosted stamp
+
+            string body = $@"
+<html>
+<head>
+     <style>
+        body {{
+            font-family: Arial, sans-serif;
+        }}
+        .header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }}
+        .stamp {{
+            float: right;
+            width: 120px;
+        }}
+        .logo {{
+            float: left;
+            width: 150px;
+        }}
+    </style>
+</head>
+<body>
+     <div class='header'>
+        <img src='{logoUrl}' class='logo' alt='Ibhayi Pharmacy Logo' />
+        <img src='{stampUrl}' class='stamp' alt='Approved Stamp' />
+    </div>
+    
+    <p>Dear {supplierName},</p>
+
+    <p><strong>Stock order #{stockOrderNumber}</strong> has been <strong>approved</strong>.</p>
+
+    <p><u>Ordered Medications:</u></p>
+    <ul>
+        {medicationDetails}
+    
+    </ul>
+
+   <p>Regards,<br />
+<strong>{pharmacy.Name}</strong><br />
+Registration No: {pharmacy.HealthCouncilRegistrationNumber}<br />
+Address: {pharmacy.PhysicalAddress1}{(string.IsNullOrWhiteSpace(pharmacy.PhysicalAddress2) ? "" : ", " + pharmacy.PhysicalAddress2)}<br />
+Phone: {pharmacy.ContactNumber}<br />
+Email: {pharmacy.Email}<br />
+{(string.IsNullOrWhiteSpace(pharmacy.WebsiteUrl) ? "" : $"Website: <a href='{pharmacy.WebsiteUrl}'>{pharmacy.WebsiteUrl}</a><br />")}
+</p>
+
+</body>
+</html>";
+
+            var mail = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username, "Ibhayi Pharmacy System"),
+                Subject = $"Stock Order {stockOrderNumber} Approved",
+                Body = body,
+                IsBodyHtml = true // ✅ Enable HTML
+            };
+
+            mail.To.Add(toEmail);
+
+            using var smtp = new System.Net.Mail.SmtpClient(_smtpSettings.Server, _smtpSettings.Port)
+            {
+                Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password),
+                EnableSsl = _smtpSettings.EnableSSL
+            };
+
+            await smtp.SendMailAsync(mail);
+        }
+
+       
+
         // GET: StockOrder/DeleteMedicationStockOrder/5
         public async Task<IActionResult> DeleteMedicationStockOrder(int? id)
         {
@@ -1553,58 +1936,6 @@ namespace PrescribingSystem.Controllers
             return RedirectToAction("Index");
         }
 
-
-
-
-
-        //public IActionResult GenerateOrderPdf(int id)
-        //{
-        //    var order = _context.MedicationStockOrder
-        //                        .Include(o => o.StockOrder)
-        //                        .ThenInclude(m => m.MedicationStockOrder)
-        //                        .FirstOrDefault(o => o.StockOrderId == id);
-
-        //    if (order == null) return NotFound();
-
-        //    // Logic to generate PDF (e.g., using iTextSharp, DinkToPdf, etc.)
-        //    byte[] pdfBytes = _pdfService.GenerateOrderPdf(order); // implement this in your service
-
-        //    return File(pdfBytes, "application/pdf", $"Order_{order.StockOrder}.pdf");
-        //}
-
-        private async Task SendOrderEmail(int supplierId, List<MedicationStockOrder> orderItems)
-        {
-            var supplier = await _context.Supplier.FindAsync(supplierId);
-            var medicationDetails = orderItems
-                .Join(_context.Medication,
-                    oi => oi.MedicationId,
-                    m => m.MedicationId,
-                    (oi, m) => new { m.Name, oi.Quantity })
-                .ToList();
-
-            var body = new StringBuilder();
-            body.AppendLine("<h3>New Medication Order</h3><ul>");
-            foreach (var item in medicationDetails)
-            {
-                body.AppendLine($"<li>{item.Name} - Qty: {item.Quantity}</li>");
-            }
-            body.AppendLine("</ul>");
-
-            var message = new MailMessage("linganiamanda@gmail.com", supplier.Email)
-            {
-                Subject = "New Medication Stock Order",
-                Body = body.ToString(),
-                IsBodyHtml = true
-            };
-
-            using var smtp = new SmtpClient("smtp.example.com")
-            {
-                Credentials = new System.Net.NetworkCredential("linganiamanda@gmail.com", "sgktttnlgsedsdny"),
-                EnableSsl = true
-            };
-
-            await smtp.SendMailAsync(message);
-        }
 
         // GET: MedicationStockOrders/Details/5
         public async Task<IActionResult> MedicationStockOrderDetails(int? id)
@@ -1706,8 +2037,6 @@ namespace PrescribingSystem.Controllers
             var stockOrders = _context.StockOrder.Include(s => s.Supplier);
             return View(await stockOrders.ToListAsync());
         }
-
-       
         public async Task<IActionResult> EditStock(int? id)
         {
             if (id == null)
@@ -1721,7 +2050,7 @@ namespace PrescribingSystem.Controllers
             {
                 StockOrderId = stockOrder.StockOrderId,
                 OrderNumber = stockOrder.OrderNumber,
-                SupplierId = stockOrder.SupplierId,
+                //SupplierId = stockOrder.SupplierId,
                 OrderDate = stockOrder.OrderDate,
                 Status = stockOrder.Status
             };
@@ -1744,7 +2073,7 @@ namespace PrescribingSystem.Controllers
                     if (stockOrder == null)
                         return NotFound();
 
-                    stockOrder.SupplierId = viewModel.SupplierId;
+                    //stockOrder.SupplierId = viewModel.SupplierId;
                     stockOrder.OrderDate = viewModel.OrderDate;
                     stockOrder.Status = viewModel.Status;
 
@@ -1813,7 +2142,7 @@ namespace PrescribingSystem.Controllers
             {
                 StockOrderId = stockOrder.StockOrderId,
                 OrderNumber = stockOrder.OrderNumber,
-                SupplierId = stockOrder.SupplierId,
+                //SupplierId = stockOrder.SupplierId,
                 OrderDate = stockOrder.OrderDate,
                 Status = stockOrder.Status
             };
@@ -1822,7 +2151,11 @@ namespace PrescribingSystem.Controllers
 
             return View(viewModel);
         }
+        // this is for the notification once the prescription is dispensed
 
+       
+    // Called when a prescription is dispensed
+   
 
         private bool MedicationExists(int id)
         {

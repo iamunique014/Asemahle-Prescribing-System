@@ -1,91 +1,174 @@
-﻿@model IEnumerable<PrescribingSystem.Models.StockOrder>
+﻿@model Tuple<IEnumerable<PrescribingSystem.Models.StockOrder>, IEnumerable<PrescribingSystem.Models.ApprovedOrder>>
 
 @{
     ViewData["Title"] = "Stock Orders";
 }
 
-<h2>Stock Orders</h2>
-
-<div class="mb-4">
-    <a asp-action="AddMedicationStock" class="btn btn-success me-2">
-        <i class="fas fa-plus"></i> Medication Stock
-    </a>
-    <a asp-action="Manager" class="btn btn-primary">
-        <i class="fas fa-arrow-left"></i> Back
-    </a>
-</div>
-
-@foreach (var group in Model.GroupBy(o => o.Supplier))
-{
-    var collapseId = $"collapse-{group.Key?.SupplierId}";
-    <div class="card my-3">
-        <div class="card-header bg-dark text-white">
-            <a class="text-white text-decoration-none" data-bs-toggle="collapse" href="#@collapseId" role="button" aria-expanded="false">
-                <h5 class="mb-0">@group.Key?.SupplierName </h5>
+<div class="container">
+    <!-- ✅ Navigation Bar with Buttons + Search -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 px-3 rounded shadow-sm">
+        <div class="d-flex flex-grow-1 justify-content-start align-items-center gap-2">
+            <a asp-action="AddMedicationStock" class="btn btn-success">
+                <i class="fas fa-plus"></i> Medication Stock
+            </a>
+            <a asp-action="ListApprovedOrders" class="btn btn-primary">View Orders</a>
+            <a asp-action="Manager" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>
-        <div class="collapse" id="@collapseId">
-            <div class="card-body p-0">
-                <table class="table table-dark table-striped m-0">
-                    <thead>
-                        <tr>
-                            <th>Order Number</th>
-                            <th>Order Date</th>
-                            <th>Status</th>
-                            <th>Medication</th>
-                          
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var order in group)
-                        {
-                            <tr>
-                                <td>@order.OrderNumber</td>
-                                <td>@order.OrderDate.ToShortDateString()</td>
-                                <td>@(order.Status ? "Processed" : "Pending")</td>
-                                <td>
-                                    <ul class="mb-0">
-                                        @foreach (var item in order.MedicationStockOrder)
-                                        {
-                                            <li class="d-flex align-items-center">
-                                                <input type="checkbox" name="selectedMedications" value="@item.MedicationStockOrderId" class="form-check-input me-2" />
-                                                <span>@item.Medication?.Name - Qty: @item.Quantity</span>
-                                            </li>
-                                        }
-                                    </ul>
 
-                                    <!-- Actions -->
-                                    <div class="mt-2">
-                                        <a asp-action="MedicationStockOrderDetails" asp-route-id="@order.StockOrderId" class="btn btn-info btn-sm me-1">
-                                            <i class="fas fa-info-circle"></i> Details
-                                        </a>
-                                        <a asp-action="MedicationStockOrderEdit" asp-route-id="@order.StockOrderId" class="btn btn-warning btn-sm me-1">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </a>
-                                        <a asp-action="DeleteMedicationStockOrder" asp-route-id="@order.StockOrderId" class="btn btn-danger btn-sm me-1"
-                                           onclick="return confirm('Are you sure you want to delete this order?');">
-                                            <i class="fas fa-trash-alt"></i> Delete
-                                        </a>
+        <form method="get" asp-action="IndexStockOrder" class="d-flex ms-auto">
+            <input type="text" name="searchOrderNumber" value="@ViewBag.CurrentFilter" class="form-control me-2" placeholder="Search by Order Number..." />
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </nav>
 
-                                        <!-- PDF Button -->
-                                        <a asp-action="ExportStockOrderToPdf" asp-route-id="@order.StockOrderId" class="btn btn-secondary btn-sm me-1">
-                                            <i class="fas fa-file-pdf"></i> PDF
-                                        </a>
+    <!-- 🕗 Pending Orders Panel -->
+    <div class="card mb-5">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">Pending Stock Orders</h4>
+        </div>
+        <div class="card-body">
+            @foreach (var group in Model.Item1.GroupBy(o => o.Supplier))
+            {
+                var collapseId = $"collapse-{group.Key?.SupplierId}";
+                <div class="card my-3">
+                    <div class="card-header bg-secondary text-white">
+                        <a class="text-white text-decoration-none d-block" data-bs-toggle="collapse" href="#@collapseId" role="button">
+                            <h5 class="mb-0">@group.Key?.SupplierName</h5>
+                        </a>
+                    </div>
+                    <div class="collapse" id="@collapseId">
+                        <div class="card-body p-0">
+                            <table class="table table-striped m-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Order Number</th>
+                                        <th>Order Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in group)
+                                    {
+                                        <tr>
+                                            <td>@order.OrderNumber</td>
+                                            <td>@order.OrderDate.ToShortDateString()</td>
+                                            <td>
+                                                <span class="badge @(order.Status ? "bg-success" : "bg-warning text-dark")">
+                                                    @(order.Status ? "Approved" : "Pending")
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a asp-action="MedicationStockOrderDetails" asp-route-id="@order.StockOrderId" class="btn btn-info btn-sm me-1">
+                                                    <i class="fas fa-info-circle"></i> Details
+                                                </a>
 
-                                        <!-- Email Button -->
-                                        <a asp-action="EmailOrderToSupplier" asp-route-id="@order.StockOrderId" class="btn btn-success btn-sm">
-                                            <i class="fas fa-paper-plane"></i> Send to Supplier
-                                        </a>
-                                    </div>
-                                </td>
+                                                @if (!order.Status)
+                                                {
+                                                    <a asp-action="MedicationStockOrderEdit" asp-route-id="@order.StockOrderId" class="btn btn-warning btn-sm me-1">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </a>
 
-                            </tr>
-                        }
-                    </tbody>
+                                                    <form asp-action="DeleteMedicationStockOrder" asp-route-id="@order.StockOrderId" method="post" class="d-inline me-1"
+                                                          onsubmit="return confirm('Are you sure you want to delete this order?');">
+                                                        <button type="submit" class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-trash-alt"></i> Delete
+                                                        </button>
+                                                    </form>
 
+                                                    <form asp-action="ApproveStockOrder2" asp-route-id="@order.StockOrderId" method="post" class="d-inline me-1"
+                                                          onsubmit="return confirm('Approve this stock order and move it to Approved Orders?');">
+                                                        <button type="submit" class="btn btn-success btn-sm">
+                                                            <i class="fas fa-check-circle"></i> Approve
+                                                        </button>
+                                                    </form>
+                                                }
 
-                </table>
-            </div>
+                                                <a asp-action="ExportStockOrderToPdf" asp-route-id="@order.StockOrderId" class="btn btn-secondary btn-sm me-1">
+                                                    <i class="fas fa-file-pdf"></i> PDF
+                                                </a>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Expandable Medications Table -->
+                                        <tr>
+                                            <td colspan="4" class="p-0">
+                                                <table class="table table-bordered mb-0">
+                                                    <thead>
+                                                        <tr class="table-light">
+                                                            <th>Medication</th>
+                                                            <th>Supplier</th>
+                                                            <th>Quantity</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in order.MedicationStockOrder)
+                                                        {
+                                                            <tr>
+                                                                <td>@item.Medication?.Name</td>
+                                                                <td>@item.Medication?.Supplier?.SupplierName</td>
+                                                                <td>@item.Quantity</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
-}
+
+    <!-- ✅ Approved Orders Panel -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">Approved Orders</h4>
+        </div>
+        <div class="card-body">
+            @foreach (var approved in Model.Item2)
+            {
+                <div class="card border-success mb-4">
+                    <div class="card-header bg-light text-dark fw-bold">
+                        Approved Order - @approved.OrderNumber
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Date:</strong> @approved.OrderDate.ToShortDateString()</p>
+                        <p><strong>Approved By:</strong> @approved.ApprovedBy</p>
+                        <p><strong>Approved At:</strong> @approved.ApprovedAt.ToString("dd MMM yyyy HH:mm")</p>
+
+                        <ul>
+                            @foreach (var item in approved.MedicationItems)
+                            {
+                                <li>@item.MedicationName - Qty: @item.Quantity</li>
+                            }
+                        </ul>
+
+                        <a asp-action="ExportApprovedOrderToPdf" asp-route-id="@approved.ApprovedOrderId" class="btn btn-secondary btn-sm me-2">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- 🔔 Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mt-4">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mt-4">@TempData["ErrorMessage"]</div>
+    }
+</div>

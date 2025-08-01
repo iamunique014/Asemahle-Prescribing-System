@@ -1,0 +1,48 @@
+﻿@model List<PrescribingSystem.Models.ViewModels.GroupedMedicationViewModel>
+
+@{
+    ViewData["Title"] = "Confirm Medication Stock Grouped by Supplier";
+}
+
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h2 class="text-primary">@ViewData["Title"]</h2>
+        <p class="text-muted">Review the medications grouped by supplier before submitting.</p>
+    </div>
+
+    <form asp-action="SubmitGroupedMedicationStock" method="post">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <strong>Supplier: @Model[i].SupplierName</strong>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Medication Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var med in Model[i].Medications)
+                            {
+                                <tr>
+                                    <td>
+                                        @med.Name
+                                        <input type="hidden" name="GroupedMedications[@i].MedicationsIds" value="@med.MedicationId" />
+                                        <input type="hidden" name="GroupedMedications[@i].SupplierId" value="@Model[i].SupplierId" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-success px-4 py-2">✅ Confirm & Submit</button>
+        </div>
+    </form>
+</div>

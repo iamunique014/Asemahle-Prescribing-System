@@ -1,0 +1,86 @@
+﻿@model IEnumerable<PrescribingSystem.Models.ApprovedOrder>
+
+@{
+    ViewData["Title"] = "Approved Orders";
+}
+
+<h2 class="mb-4">Approved Orders</h2>
+
+<!-- Filter Buttons -->
+<div class="mb-3 d-flex gap-2">
+    <a asp-action="ApprovedOrders" asp-route-filter="all" class="btn btn-outline-secondary @(ViewBag.Filter == "all" ? "active" : "")">All</a>
+    <a asp-action="ApprovedOrders" asp-route-filter="received" class="btn btn-outline-success @(ViewBag.Filter == "received" ? "active" : "")">Received</a>
+    <a asp-action="ApprovedOrders" asp-route-filter="notreceived" class="btn btn-outline-warning @(ViewBag.Filter == "notreceived" ? "active" : "")">Not Received</a>
+</div>
+
+<!-- Flash Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<!-- Back Button -->
+<div class="mb-4">
+    <a asp-action="IndexStockOrder" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No approved orders available.</div>
+}
+else
+{
+    foreach (var order in Model)
+    {
+        <div class="card border-success mb-4">
+            <div class="card-header bg-success text-white">
+                Approved Order - @order.OrderNumber
+            </div>
+            <div class="card-body">
+                <p><strong>Date:</strong> @order.OrderDate.ToShortDateString()</p>
+                <p><strong>Approved By:</strong> @order.ApprovedBy</p>
+                <p><strong>Approved At:</strong> @order.ApprovedAt.ToString("dd MMM yyyy HH:mm")</p>
+
+                <h6>Medications:</h6>
+                <ul>
+                    @if (order.MedicationItems != null && order.MedicationItems.Any())
+                    {
+                        foreach (var item in order.MedicationItems)
+                        {
+                            <li>@item.MedicationName - Qty: @item.Quantity</li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="text-muted">No medications listed.</li>
+                    }
+                </ul>
+
+                <!-- Export to PDF -->
+                <a asp-action="ExportApprovedOrderToPdf" asp-route-id="@order.ApprovedOrderId" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-file-pdf"></i> Export PDF
+                </a>
+
+                <!-- Mark as Received Section -->
+                @if (!order.IsReceived)
+                {
+                    <form asp-action="MarkOrderAsReceived" asp-route-id="@order.ApprovedOrderId" method="post" class="mt-2">
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="fas fa-check-circle"></i> Mark as Received
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <span class="badge bg-success">Received on @order.ReceivedAt?.ToString("dd MMM yyyy HH:mm")</span>
+                }
+            </div>
+        </div>
+    }
+}

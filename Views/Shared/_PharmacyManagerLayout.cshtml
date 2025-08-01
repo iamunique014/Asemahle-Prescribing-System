@@ -28,7 +28,7 @@
         body {
             font-family: 'Roboto Serif', serif;
             margin: 0;
-            background-color: #f4f8fb;
+            background-color: #F1FAEE;
             color: #333;
         }
 
@@ -89,7 +89,7 @@
 
         .panel-item {
             background-color: white;
-            color: #333;
+            color: black;
             border-radius: 6px;
             padding: 10px;
             margin-bottom: 8px;
@@ -117,6 +117,15 @@
                 <ul class="menu-links">
                     @* <li><a href="#"><i class='bx bx-home icon'></i><span class="text nav-text">Home</span></a></li>
                     <li><a href="#"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Cabinet</span></a></li> *@
+                    <li>
+                        <a asp-controller="PharmacyManager" asp-action="DispensedPrescriptions">
+                            <i class="fas fa-bell icon position-relative"></i>
+                            <span class="text nav-text">Dispensed Alerts</span>
+                            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="notificationBadge" style="display: none;">
+                                0
+                            </span>
+                        </a>
+                    </li>
 
                     <li><a asp-controller="PharmacyManager" asp-action="IndexDoctor"><i class="fas fa-user-md icon"></i><span class="text nav-text">Add Doctor</span></a></li>
 
@@ -136,6 +145,7 @@
 
                     <li><a asp-controller="PharmacyManager" asp-action="IndexStockOrder"><i class="fas fa-pills icon"></i><span class="text nav-text">Medication Stock</span></a></li>
 
+                    <li><a asp-controller="PharmacyManager" asp-action="ApprovedOrders"><i class="fas fa-pills icon"></i><span class="text nav-text">Receive Orders</span></a></li>
                     <li><a asp-area="Identity" asp-page="/Account/Logout"> <i class="fas fa-sign-out-alt icon"></i><span class="text nav-text">Logout</span></a></li>
                   
                 </ul>
@@ -231,6 +241,27 @@
                 }
             }
         });
+
+            function checkDispensedNotifications() {
+            $.ajax({
+                url: '/Notification/GetDispensedNotificationCount',
+                method: 'GET',
+                success: function (data) {
+                    var badge = $('#notificationBadge');
+                    if (data.count > 0) {
+                        badge.text(data.count);
+                        badge.show();
+                    } else {
+                        badge.hide();
+                    }
+                }
+            });
+        }
+
+        // Run every 10 seconds
+        setInterval(checkDispensedNotifications, 10000);
+        // Initial run
+        $(document).ready(checkDispensedNotifications);
     </script>
 
 </body>

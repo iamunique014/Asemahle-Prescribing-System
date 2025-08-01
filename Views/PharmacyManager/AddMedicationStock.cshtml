@@ -1,7 +1,5 @@
 ﻿@model PrescribingSystem.Models.ViewModels.StockOrderCreateViewModel
 
-
-
 @{
     ViewData["Title"] = "Medication Records & Order";
 }
@@ -10,9 +8,6 @@
 
 <!-- Actions -->
 <div class="mb-3 d-flex gap-2">
- @*    <a asp-action="AddMedication" class="btn btn-success">
-        <i class="fas fa-plus"></i> Add Medication
-    </a> *@
     <a asp-action="Manager" class="btn btn-primary">
         <i class="fas fa-arrow-left"></i> Back
     </a>
@@ -21,21 +16,22 @@
 <!-- Medication Records Table with Selection -->
 <section class="mb-5">
     <form asp-action="AddMedicationStock" method="post">
-        <!-- Hidden Stock Order ID -->
-        <!-- Stock Order Dropdown -->
-       @*  <div class="form-group">
-            <label asp-for="StockOrderId" class="form-label">Select Stock Date</label>
-            <select asp-for="StockOrderId" asp-items="ViewBag.StockOrderId" class="form-control">
-                <option value="">-- Select Stock --</option>
+        <!-- Supplier Selection -->
+        @* <div class="form-group">
+            <label asp-for="SupplierId" class="form-label">Select Supplier</label>
+            <select asp-for="SupplierId" class="form-control" asp-items="@(ViewBag.SupplierList as List<SelectListItem>)">
+                <option value="">-- Select Supplier --</option>
             </select>
-            <span asp-validation-for="StockOrderId" class="text-danger"></span>
+            <span asp-validation-for="SupplierId" class="text-danger"></span>
         </div> *@
 
+        <!-- Order Number -->
         <input type="hidden" asp-for="OrderNumber" />
         <div class="form-group">
             <label asp-for="OrderNumber" class="form-label">Order Number</label>
             <input asp-for="OrderNumber" class="form-control" readonly />
         </div>
+
         <div class="card">
             <div class="card-header bg-dark text-white">
                 <strong>Existing Medications (Select for Stock Order)</strong>
@@ -83,6 +79,7 @@
                                            name="Quantity[@item.MedicationId]"
                                            placeholder="Qty"
                                            min="1"
+                                           value="1"
                                            disabled />
                                     <span class="text-danger quantity-error" style="display:none;">Required</span>
                                 </td>
@@ -114,6 +111,11 @@
         </div>
 
         <!-- Form Buttons -->
+        <form asp-action="ConfirmMedicationStock" method="post">
+            <!-- Selection Form -->
+            <button type="submit" class="btn btn-success">Next: Confirm</button>
+        </form>
+
         <div class="form-group mt-3 d-flex gap-2">
             <button type="submit" class="btn btn-primary">Place Order</button>
             <a asp-action="IndexStockOrder" class="btn btn-secondary">Back to List</a>
@@ -125,6 +127,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const checkboxes = document.querySelectorAll('.medication-checkbox');
+            const summaryTable = document.getElementById('medicationSummaryTableBody');
 
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function () {
@@ -132,21 +135,22 @@
                     const medName = this.dataset.medName;
                     const row = this.closest('tr');
                     const quantityInput = row.querySelector('.quantity-input');
-                    const summaryTable = document.getElementById('medicationSummaryTableBody');
 
                     if (this.checked) {
                         quantityInput.disabled = false;
+                        quantityInput.value = quantityInput.value || 1;
 
-                        // Add to summary
-                        const summaryRow = document.createElement('tr');
-                        summaryRow.setAttribute('data-med-id', medId);
-                        summaryRow.innerHTML = `
-                            <td>${medName}</td>
-                            <td class="summary-quantity">${quantityInput.value || '1'}</td>
-                        `;
-                        summaryTable.appendChild(summaryRow);
+                        const existingSummaryRow = summaryTable.querySelector(`tr[data-med-id="${medId}"]`);
+                        if (!existingSummaryRow) {
+                            const summaryRow = document.createElement('tr');
+                            summaryRow.setAttribute('data-med-id', medId);
+                            summaryRow.innerHTML = `
+                                <td>${medName}</td>
+                                <td class="summary-quantity">${quantityInput.value}</td>
+                            `;
+                            summaryTable.appendChild(summaryRow);
+                        }
 
-                        // Update summary on quantity input
                         quantityInput.addEventListener('input', function () {
                             const summaryCell = summaryTable.querySelector(`tr[data-med-id="${medId}"] .summary-quantity`);
                             if (summaryCell) {
@@ -159,11 +163,12 @@
                         quantityInput.value = '';
 
                         const summaryRow = summaryTable.querySelector(`tr[data-med-id="${medId}"]`);
-                        if (summaryRow) summaryTable.removeChild(summaryRow);
+                        if (summaryRow) {
+                            summaryTable.removeChild(summaryRow);
+                        }
                     }
                 });
             });
         });
     </script>
 }
-

@@ -1,0 +1,26 @@
+﻿<h2 class="mt-5">Approved Orders</h2>
+
+@foreach (var approved in Model.Item2)
+{
+    <div class="card border-success mb-4">
+        <div class="card-header bg-success text-white">
+            Approved Order - @approved.OrderNumber
+        </div>
+        <div class="card-body">
+            <p><strong>Date:</strong> @approved.OrderDate.ToShortDateString()</p>
+            <p><strong>Approved By:</strong> @approved.ApprovedBy</p>
+            <p><strong>Approved At:</strong> @approved.ApprovedAt.ToString("dd MMM yyyy HH:mm")</p>
+
+            <ul>
+                @foreach (var item in approved.MedicationItems)
+                {
+                    <li>@item.MedicationName - Qty: @item.Quantity</li>
+                }
+            </ul>
+
+            <a asp-action="ExportApprovedOrderToPdf" asp-route-id="@approved.ApprovedOrderId" class="btn btn-secondary btn-sm me-2">
+                <i class="fas fa-file-pdf"></i> PDF
+            </a>
+        </div>
+    </div>
+}

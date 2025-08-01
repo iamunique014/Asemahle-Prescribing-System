@@ -1,0 +1,103 @@
+﻿@model PrescribingSystem.Models.ViewModels.ApprovedOrderListViewModel
+
+@{
+    ViewData["Title"] = "Approved Orders";
+    string filter = ViewBag.Filter as string ?? "all";
+    string search = ViewBag.Search as string ?? "";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0 text-primary">
+            <i class="bi bi-box-seam"></i> Approved Stock Orders
+        </h2>
+    </div>
+
+    <!-- 🔎 Search + Filter Toolbar (Full-width Navbar Style) -->
+    <div class="bg-white border rounded shadow-sm p-3 mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Search Order Number..." value="@search" />
+            </div>
+            <div class="col-md-auto">
+                <button type="submit" class="btn btn-outline-secondary">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+
+            
+
+            <div class="col text-end">
+                <a asp-action="ListApprovedOrders" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </form>
+        
+    </div>
+    <div class="col-md-auto">
+        <div class="btn-group" role="group" aria-label="Filter Orders">
+            <a class="btn btn-outline-primary @(filter == "all" ? "active" : "")" href="?filter=all&search=@search">
+                <i class="bi bi-list-ul"></i> All
+            </a>
+            <a class="btn btn-outline-success @(filter == "received" ? "active" : "")" href="?filter=received&search=@search">
+                <i class="bi bi-check-circle"></i> Received
+            </a>
+            <a class="btn btn-outline-danger @(filter == "notreceived" ? "active" : "")" href="?filter=notreceived&search=@search">
+                <i class="bi bi-x-circle"></i> Not Received
+            </a>
+            <a class="btn btn-outline-danger">
+                <a asp-action="ListApprovedOrders" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </a>
+        </div>
+    </div>
+
+    <!-- ✅ Orders Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover shadow-sm" style="background-color: white;">
+            <thead class="table-light text-dark">
+                <tr>
+                    <th scope="col">Order Number</th>
+                    <th scope="col">Approved Date</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var orders = filter switch
+                    {
+                        "received" => Model.ReceivedOrders,
+                        "notreceived" => Model.NotReceivedOrders,
+                        _ => Model.ReceivedOrders.Concat(Model.NotReceivedOrders)
+                    };
+
+                    foreach (var order in orders)
+                    {
+                        <tr>
+                            <td>@order.OrderNumber</td>
+                            <td>@order.ApprovedDate.ToString("dd MMM yyyy HH:mm")</td>
+                            <td>
+                                @if (order.IsReceived)
+                                {
+                                    <span class="badge bg-success">Received</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Not Received</span>
+                                }
+                            </td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-info" href="/ApprovedOrder/Details/@order.OrderNumber">
+                                    <i class="bi bi-eye-fill"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

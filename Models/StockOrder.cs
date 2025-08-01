@@ -5,6 +5,7 @@ namespace PrescribingSystem.Models
 {
     public class StockOrder
     {
+
         [Key]
         public int StockOrderId { get; set; }
 
@@ -26,11 +27,14 @@ namespace PrescribingSystem.Models
         [Display(Name = "Order Status")]
         public bool Status { get; set; } = false; // false = pending, true = completed
 
-        // Navigation properties
         public Supplier Supplier { get; set; }
 
         [Display(Name = "Ordered Items")]
         public ICollection<MedicationStockOrder> MedicationStockOrder { get; set; }
+        public string? ApprovedBy { get; set; }
+        public DateTime? ApprovedAt { get; set; }
+        public DateTime? ReceivedDate { get; set; }
+
 
     }
 }

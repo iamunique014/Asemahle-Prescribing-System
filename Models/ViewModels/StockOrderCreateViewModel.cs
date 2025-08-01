@@ -6,17 +6,17 @@ namespace PrescribingSystem.Models.ViewModels
 {
     public class StockOrderCreateViewModel
     {
-        
-        public int StockOrderId { get; set; }
-        [Display(Name = "Order Number")]
         public string OrderNumber { get; set; }
-        public List<Medication> Medications { get; set; } = new();
 
-        // List of selected medication IDs
-        public List<int> SelectedMedicationIds { get; set; } = new();
+        public List<Medication> Medications { get; set; }
 
-        // Quantities keyed by medication ID
+        public List<int> SelectedMedicationIds { get; set; }
+        public int SupplierId { get; set; }
+        public Supplier Supplier { get; set; }
+
         public Dictionary<int, int> Quantity { get; set; } = new();
+
+
         //public List<int> ExistingStockIds { get; set; } // IDs that should be excluded
         //public List<SelectListItem> AvailableStocks { get; set; }
         //public int? SelectedStockId { get; set; } // selected item
