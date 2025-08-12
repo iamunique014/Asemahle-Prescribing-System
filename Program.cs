@@ -11,30 +11,43 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var smtpSettings = new SmtpSettings();
-        builder.Configuration.GetSection("SmtpSettings").Bind(smtpSettings);
-        builder.Services.AddSingleton(smtpSettings);
-        builder.Services.AddSingleton<IEmailSender, EmailServices>();
+        // Database
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-        // Add services to the container.
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(connectionString));
-        builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-        builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+            options.UseSqlServer(connectionString));
+
+        // Identity
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+        {
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 8;
+            options.Password.RequireUppercase = false;
+            options.User.RequireUniqueEmail = true;
+            options.SignIn.RequireConfirmedPhoneNumber = false;
+            options.SignIn.RequireConfirmedEmail = false;
+            options.SignIn.RequireConfirmedAccount = false;
+        })
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddDefaultTokenProviders();
+
+        // SMTP Email configuration
         builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
         builder.Services.AddSingleton(sp =>
             sp.GetRequiredService<IOptions<SmtpSettings>>().Value);
+        builder.Services.AddSingleton<IEmailSender, EmailServices>();
 
-
-        builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        // MVC + Razor Pages
         builder.Services.AddControllersWithViews();
+        builder.Services.AddRazorPages();
+
+        // Developer exception filter for EF migrations
+        builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
         var app = builder.Build();
 
-
+        // Role seeding
         using (var scope = app.Services.CreateScope())
         {
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -43,10 +56,13 @@ public class Program
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
+                {
                     await roleManager.CreateAsync(new IdentityRole(role));
+                }
             }
         }
 
+        // Middleware pipeline
         if (app.Environment.IsDevelopment())
         {
             app.UseMigrationsEndPoint();
@@ -54,7 +70,6 @@ public class Program
         else
         {
             app.UseExceptionHandler("/Home/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 
@@ -63,6 +78,7 @@ public class Program
 
         app.UseRouting();
 
+        app.UseAuthentication(); // <-- Added so Identity actually works
         app.UseAuthorization();
 
         app.MapControllerRoute(
@@ -72,6 +88,4 @@ public class Program
 
         app.Run();
     }
-
-
 }

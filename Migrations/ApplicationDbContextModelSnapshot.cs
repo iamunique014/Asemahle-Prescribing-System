@@ -767,7 +767,7 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -776,7 +776,7 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Data.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -785,7 +785,7 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Data.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -794,13 +794,13 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("PrescribingSystem.Data.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -809,7 +809,7 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Data.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -818,7 +818,7 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Models.StockOrder", "StockOrder")
                         .WithMany()
                         .HasForeignKey("StockOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("StockOrder");
@@ -829,7 +829,7 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Models.ApprovedOrder", "ApprovedOrder")
                         .WithMany("MedicationItems")
                         .HasForeignKey("ApprovedOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ApprovedOrder");
@@ -840,13 +840,13 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Models.ActiveIngredients", "ActiveIngredients")
                         .WithMany("CustomerAllergies")
                         .HasForeignKey("ActiveIngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("PrescribingSystem.Models.Customer", "Customer")
                         .WithMany("CustomerAllergies")
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ActiveIngredients");
@@ -863,13 +863,13 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Models.DorsageForm", "DorsageForm")
                         .WithMany()
                         .HasForeignKey("DorsageFormId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("PrescribingSystem.Models.Supplier", "Supplier")
                         .WithMany()
                         .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("DorsageForm");
@@ -882,13 +882,13 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Models.ActiveIngredients", "ActiveIngredient")
                         .WithMany()
                         .HasForeignKey("ActiveIngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("PrescribingSystem.Models.Medication", "Medication")
                         .WithMany("MedicationActiveIngredients")
                         .HasForeignKey("MedicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ActiveIngredient");
@@ -901,13 +901,13 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Models.Medication", "Medication")
                         .WithMany("MedicationStockOrder")
                         .HasForeignKey("MedicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("PrescribingSystem.Models.StockOrder", "StockOrder")
                         .WithMany("MedicationStockOrder")
                         .HasForeignKey("StockOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Medication");
@@ -920,7 +920,7 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Models.Pharmacist", "Pharmacist")
                         .WithMany()
                         .HasForeignKey("PharmacistId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Pharmacist");
@@ -931,7 +931,7 @@ namespace PrescribingSystem.Migrations
                     b.HasOne("PrescribingSystem.Models.Supplier", "Supplier")
                         .WithMany()
                         .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Supplier");
