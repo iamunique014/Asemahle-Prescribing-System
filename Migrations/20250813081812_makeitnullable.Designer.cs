@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PrescribingSystem.Data;
 
@@ -11,9 +12,11 @@ using PrescribingSystem.Data;
 namespace PrescribingSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250813081812_makeitnullable")]
+    partial class makeitnullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -377,30 +380,6 @@ namespace PrescribingSystem.Migrations
                     b.HasKey("CustomerId");
 
                     b.ToTable("Customer");
-                });
-
-            modelBuilder.Entity("PrescribingSystem.Models.CustomerAllergies", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ActiveIngredientId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActiveIngredientId");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("CustomerAllergies");
                 });
 
             modelBuilder.Entity("PrescribingSystem.Models.CustomerAllergy", b =>
@@ -854,25 +833,6 @@ namespace PrescribingSystem.Migrations
                     b.Navigation("ApprovedOrder");
                 });
 
-            modelBuilder.Entity("PrescribingSystem.Models.CustomerAllergies", b =>
-                {
-                    b.HasOne("PrescribingSystem.Models.ActiveIngredients", "ActiveIngredient")
-                        .WithMany()
-                        .HasForeignKey("ActiveIngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PrescribingSystem.Data.ApplicationUser", "Customer")
-                        .WithMany("CustomerAllergies")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ActiveIngredient");
-
-                    b.Navigation("Customer");
-                });
-
             modelBuilder.Entity("PrescribingSystem.Models.CustomerAllergy", b =>
                 {
                     b.HasOne("PrescribingSystem.Models.ActiveIngredients", "ActiveIngredients")
@@ -973,11 +933,6 @@ namespace PrescribingSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("Supplier");
-                });
-
-            modelBuilder.Entity("PrescribingSystem.Data.ApplicationUser", b =>
-                {
-                    b.Navigation("CustomerAllergies");
                 });
 
             modelBuilder.Entity("PrescribingSystem.Models.ActiveIngredients", b =>

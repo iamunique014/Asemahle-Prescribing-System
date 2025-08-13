@@ -17,6 +17,7 @@ namespace PrescribingSystem.Data
         public DbSet<Doctor> Doctor { get; set; }
         public DbSet<DorsageForm> DorsageForm { get; set; }
         public DbSet<Customer> Customer { get; set; }
+        public DbSet<CustomerAllergies> CustomerAllergies { get; set; }
         public DbSet<CustomerAllergy> CustomerAllergy { get; set; }
         public DbSet<Pharmacy> Pharmacy { get; set; }
         public DbSet<Pharmacist> Pharmacist { get; set; }
