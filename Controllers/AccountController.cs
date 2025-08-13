@@ -53,6 +53,8 @@ namespace SiphoAuth.Controllers
                 ApplicationUser users = new ApplicationUser
                 {
                 FirstName= model.Name,
+                LastName=model.LastName,
+                IdentityNumber= model.IdentityNumber,
                 Email = model.Email,
                 UserName = model.Email,
             };
