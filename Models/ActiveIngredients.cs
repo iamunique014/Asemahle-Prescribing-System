@@ -12,7 +12,8 @@ namespace PrescribingSystem.Models
         public string? ActiveIngredientName { get; set; }
 
         // Navigation
-        public ICollection<CustomerAllergy> CustomerAllergies { get; set; } = new List<CustomerAllergy>();
+        //public ICollection<CustomerAllergy> CustomerAllergies { get; set; } = new List<CustomerAllergy>();\
+        public ICollection<UserAllergy> UserAllergies { get; set; }
         public ICollection<Medication> Medications { get; set; } = new List<Medication>(); // Optional reverse navigation
     }
 

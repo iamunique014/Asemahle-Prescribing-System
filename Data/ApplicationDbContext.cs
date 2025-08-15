@@ -17,7 +17,7 @@ namespace PrescribingSystem.Data
         public DbSet<Doctor> Doctor { get; set; }
         public DbSet<DorsageForm> DorsageForm { get; set; }
         public DbSet<Customer> Customer { get; set; }
-        public DbSet<CustomerAllergies> CustomerAllergies { get; set; }
+  
         public DbSet<CustomerAllergy> CustomerAllergy { get; set; }
         public DbSet<Pharmacy> Pharmacy { get; set; }
         public DbSet<Pharmacist> Pharmacist { get; set; }
@@ -29,6 +29,25 @@ namespace PrescribingSystem.Data
         public DbSet<ApprovalLog> ApprovalLogs { get; set; }
         public DbSet<ApprovedOrder> ApprovedOrders { get; set; }
         public DbSet<ApprovedMedicationItem> ApprovedMedicationItems { get; set; }
+        public DbSet<UserAllergy> UserAllergies { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<UserAllergy>()
+                .HasKey(ua => new { ua.UserId, ua.ActiveIngredientId });
+
+            builder.Entity<UserAllergy>()
+                .HasOne(ua => ua.User)
+                .WithMany(u => u.Allergies)
+                .HasForeignKey(ua => ua.UserId);
+
+            builder.Entity<UserAllergy>()
+                .HasOne(ua => ua.ActiveIngredient)
+                .WithMany(ai => ai.UserAllergies)
+                .HasForeignKey(ua => ua.ActiveIngredientId);
+        }
 
 
 

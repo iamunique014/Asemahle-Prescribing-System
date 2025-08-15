@@ -1,19 +1,13 @@
-﻿using PrescribingSystem.Models;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace PrescribingSystem.AunthViewModels
+public class CustomerProfileViewModel
 {
-    public class CustomerProfileViewModel
-    {
-        // Basic profile
-        public string FirstName { get; set; }
-        public string LastName{ get; set; }
-        public string IdentityNumber { get; set; }
-        
+    public string Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string IdentityNumber { get; set; }
+    public string Email { get; set; }
 
-        public string Email { get; set; }
-
-        // Allergies
-        public List<int> SelectedAllergyIds { get; set; } = new();
-        public List<ActiveIngredients> AvailableIngredients { get; set; } = new();
-    }
+    public List<int> SelectedAllergyIds { get; set; } = new List<int>();
+    public List<SelectListItem> AvailableAllergies { get; set; } = new List<SelectListItem>();
 }

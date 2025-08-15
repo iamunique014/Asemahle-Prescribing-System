@@ -1,87 +1,113 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using PrescribingSystem.AunthViewModels;
 using PrescribingSystem.Data;
 using PrescribingSystem.Models;
-using System.Security.Claims;
 
-//[Authorize(Roles = "Customer")]
-public class CustomerProfileController : Controller
+
+namespace YourNamespace.Controllers
 {
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public CustomerProfileController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public class CustomerProfileController : Controller
     {
-        _context = context;
-        _userManager = userManager;
-    }
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-    // GET: /CustomerProfile
-    public async Task<IActionResult> CustomerProfil()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null) return NotFound();
-
-        // Load allergies for this user (IDs)
-        var selectedIds = await _context.CustomerAllergies
-            .Where(a => a.CustomerId == user.Id)
-            .Select(a => a.ActiveIngredientId)
-            .ToListAsync();
-
-        var model = new CustomerProfileViewModel
+        public CustomerProfileController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Email = user.Email,
-            SelectedAllergyIds = selectedIds,
-            AvailableIngredients = await _context.ActiveIngredients
-                                                .OrderBy(i => i.ActiveIngredientName)
-                                                .ToListAsync()
-        };
+            _userManager = userManager;
+            _context = context;
+        }
 
-        return View(model);
-    }
-
-    // POST: /CustomerProfile
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CustomerProfil(CustomerProfileViewModel model)
-    {
-        if (!ModelState.IsValid)
+        // GET: CustomerProfile
+        public async Task<IActionResult> Index()
         {
-            // repopulate list on validation error
-            model.AvailableIngredients = await _context.ActiveIngredients.OrderBy(i => i.ActiveIngredientName).ToListAsync();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            var allAllergies = await _context.ActiveIngredients.ToListAsync();
+            var selectedAllergyIds = await _context.UserAllergies
+                .Where(ua => ua.UserId == user.Id)
+                .Select(ua => ua.ActiveIngredientId)
+                .ToListAsync();
+
+            var model = new CustomerProfileViewModel
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IdentityNumber = user.IdentityNumber,
+                Email = user.Email,
+                AvailableAllergies = allAllergies.Select(ai => new SelectListItem
+                {
+                    Value = ai.ActiveIngredientId.ToString(),
+                    Text = ai.ActiveIngredientName,
+                    Selected = selectedAllergyIds.Contains(ai.ActiveIngredientId)
+                }).ToList(),
+                SelectedAllergyIds = selectedAllergyIds
+            };
+
+
             return View(model);
         }
 
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null) return NotFound();
-
-        // Update basic fields
-        user.FirstName = model.FirstName;
-        user.LastName = model.LastName;
-        user.Email = model.Email;
-        // If you want to change Username to match email: user.UserName = model.Email;
-
-        await _userManager.UpdateAsync(user);
-
-        // Update allergies: simple approach = remove all then add selected
-        var existing = _context.CustomerAllergies.Where(a => a.CustomerId == user.Id);
-        _context.CustomerAllergies.RemoveRange(existing);
-
-        var toAdd = model.SelectedAllergyIds.Distinct().Select(id => new CustomerAllergies
+        // POST: CustomerProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Index(CustomerProfileViewModel model)
         {
-            CustomerId = user.Id,
-            ActiveIngredientId = id
-        });
+            if (!ModelState.IsValid)
+            {
+                await PopulateAllergies(model);
+                return View(model);
+            }
 
-        await _context.CustomerAllergies.AddRangeAsync(toAdd);
-        await _context.SaveChangesAsync();
+            var user = await _userManager.FindByIdAsync(model.Id);
+            if (user == null) return NotFound();
 
-        TempData["ProfileSaved"] = "Profile updated successfully.";
-        return RedirectToAction(nameof(Index));
+            // Update user basic info
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.Email = model.Email;
+            user.IdentityNumber = model.IdentityNumber;
+      
+            await _userManager.UpdateAsync(user);
+
+            // Update user allergies
+            var existingAllergies = _context.UserAllergies.Where(ua => ua.UserId == user.Id);
+            _context.UserAllergies.RemoveRange(existingAllergies);
+
+            if (model.SelectedAllergyIds != null && model.SelectedAllergyIds.Any())
+            {
+                var newAllergies = model.SelectedAllergyIds
+                    .Distinct() // prevent duplicates
+                    .Select(id => new UserAllergy
+                    {
+                        UserId = user.Id,
+                        ActiveIngredientId = id
+                    });
+
+                _context.UserAllergies.AddRange(newAllergies);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Profile updated successfully!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Helper method to populate AvailableAllergies in case of validation error
+        private async Task PopulateAllergies(CustomerProfileViewModel model)
+        {
+            var allAllergies = await _context.ActiveIngredients.ToListAsync();
+            model.AvailableAllergies = allAllergies
+                .Select(ai => new SelectListItem
+                {
+                    Value = ai.ActiveIngredientId.ToString(),
+                    Text = ai.ActiveIngredientName,
+                    Selected = model.SelectedAllergyIds != null && model.SelectedAllergyIds.Contains(ai.ActiveIngredientId)
+                })
+                .ToList();
+        }
     }
 }

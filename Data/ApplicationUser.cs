@@ -12,7 +12,8 @@ namespace PrescribingSystem.Data
         public string? HealthCouncilRegistrationNumber { get; set; }
 
         public string IdentityNumber { get; set; }
+        public ICollection<UserAllergy> Allergies { get; set; }
 
-        public ICollection<CustomerAllergies> CustomerAllergies { get; set; } = new List<CustomerAllergies>();
+        //public ICollection<CustomerAllergies> CustomerAllergies { get; set; } = new List<CustomerAllergies>();
     }
 }
