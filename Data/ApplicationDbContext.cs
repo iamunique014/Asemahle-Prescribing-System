@@ -31,6 +31,11 @@ namespace PrescribingSystem.Data
         public DbSet<ApprovedMedicationItem> ApprovedMedicationItems { get; set; }
         public DbSet<UserAllergy> UserAllergies { get; set; }
 
+        //Customer Subsystem Tables
+        public DbSet<Prescription> Prescriptions { get; set; }
+        public DbSet<MedicationItem> MedicationItems { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -47,6 +52,18 @@ namespace PrescribingSystem.Data
                 .HasOne(ua => ua.ActiveIngredient)
                 .WithMany(ai => ai.UserAllergies)
                 .HasForeignKey(ua => ua.ActiveIngredientId);
+
+            builder.Entity<Prescription>()
+               .HasMany(p => p.MedicationItems)
+               .WithOne(mi => mi.Prescription)
+               .HasForeignKey(mi => mi.PrescriptionId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<MedicationItem>()
+                   .HasOne(mi => mi.Medication)
+                   .WithMany()  // Medication itself is a catalog; doesn't need navigation back
+                   .HasForeignKey(mi => mi.MedicationId)
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent deleting Medication if used in prescription
         }
 
 
