@@ -63,53 +63,52 @@ namespace PrescribingSystem.Controllers
                 return View(model);
             }
 
-
             // Validate file
             if (model.PrescriptionFile == null || model.PrescriptionFile.Length == 0)
             {
                 ModelState.AddModelError("", "Please select a PDF file to upload.");
-                return View(model);
+                return ReloadView(model);
             }
 
             if (Path.GetExtension(model.PrescriptionFile.FileName).ToLower() != ".pdf")
             {
                 ModelState.AddModelError("", "Only PDF files are allowed.");
-                return View(model);
+                return ReloadView(model);
             }
 
             if (model.PrescriptionFile.Length > 10 * 1024 * 1024)
             {
                 ModelState.AddModelError("", "File size must be less than 10MB.");
-                return View(model);
+                return ReloadView(model);
             }
 
-
-            // transaction ensures all-or-nothing
+            // Start transaction for atomicity 
             using var transaction = await _context.Database.BeginTransactionAsync();
+            string filePath = string.Empty;
+
             try
             {
-                // Save file
+                // Save file inside transaction
                 var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "prescriptions");
                 if (!Directory.Exists(uploadsFolder))
                     Directory.CreateDirectory(uploadsFolder);
 
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.PrescriptionFile.FileName)}";
-                var filePath = Path.Combine(uploadsFolder, fileName);
+                filePath = Path.Combine(uploadsFolder, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await model.PrescriptionFile.CopyToAsync(stream);
                 }
 
-                // Save to DB
                 var prescription = new Prescription
                 {
-                    CustomerId = "8a43dadf-0a54-4703-b40b-c55784374498", // get UserId from Claims
+                    CustomerId = "8a43dadf-0a54-4703-b40b-c55784374498", // TODO: Replace with logged-in user later
                     DoctorName = model.DoctorName,
                     DateIssued = DateTime.Now,
                     TotalRepeats = model.TotalRepeats,
                     RemainingRepeats = model.TotalRepeats,
-                    TotalCost = model.Medications.Sum(m => m.Price * m.Quantity),
+                    TotalCost = model.Medications?.Sum(m => m.Price * m.Quantity) ?? 0,
                     FilePath = $"/uploads/prescriptions/{fileName}",
                     PrescriptionStatus = "Pending"
                 };
@@ -117,22 +116,9 @@ namespace PrescribingSystem.Controllers
                 _context.Prescriptions.Add(prescription);
                 await _context.SaveChangesAsync();
 
-                // validate at least 1 medication line
                 if (model.Medications == null || !model.Medications.Any())
-                {
-                    ViewBag.Medications = _context.Medication
-                       .Where(m => m.Status)
-                       .Select(m => new SelectListItem
-                       {
-                           Value = m.MedicationId.ToString(),
-                           Text = m.Name
-                       })
-                       .ToList();
-
                     throw new InvalidOperationException("A prescription must contain at least one medication.");
-                }
 
-                // Save medication items
                 foreach (var med in model.Medications)
                 {
                     var medicationItem = new MedicationItem
@@ -147,8 +133,6 @@ namespace PrescribingSystem.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-
-                // commit
                 await transaction.CommitAsync();
 
                 TempData["Success"] = "Prescription uploaded successfully!";
@@ -157,9 +141,30 @@ namespace PrescribingSystem.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+
+                // Delete file if transaction fails
+                if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+
                 ModelState.AddModelError("", $"Failed to upload prescription: {ex.Message}");
-                return View(model);
+                return ReloadView(model);
             }
+        }
+
+        private IActionResult ReloadView(PrescriptionUploadViewModel model)
+        {
+            ViewBag.Medications = _context.Medication
+                .Where(m => m.Status)
+                .Select(m => new SelectListItem
+                {
+                    Value = m.MedicationId.ToString(),
+                    Text = m.Name
+                })
+                .ToList();
+
+            return View("Upload", model);
         }
         // GET: /Prescription/MyPrescriptions
         public IActionResult MyPrescriptions()
