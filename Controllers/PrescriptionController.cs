@@ -179,5 +179,21 @@ namespace PrescribingSystem.Controllers
 
             return View(prescriptions);
         }
+
+        public async Task<IActionResult> Download(int id)
+        {
+            var prescription = await _context.Prescriptions.FindAsync(id);
+            if (prescription == null)
+                return NotFound();
+
+            var filePath = Path.Combine(_env.WebRootPath, prescription.FilePath.TrimStart('/'));
+            var fileName = Path.GetFileName(filePath);
+
+            var mimeType = "application/pdf";
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+
+            return File(fileBytes, mimeType, fileName);
+        }
+
     }
 }
