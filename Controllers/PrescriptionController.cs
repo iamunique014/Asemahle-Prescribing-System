@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using PrescribingSystem.Data;
 using PrescribingSystem.Models;
 using PrescribingSystem.Models.ViewModels;
@@ -167,13 +168,15 @@ namespace PrescribingSystem.Controllers
             return View("Upload", model);
         }
         // GET: /Prescription/MyPrescriptions
-        public IActionResult MyPrescriptions()
+        public async Task<IActionResult> MyPrescriptions()
         {
             var userId = "8a43dadf-0a54-4703-b40b-c55784374498"; // Or use UserManager to get UserId
-            var prescriptions = _context.Prescriptions
+
+            var prescriptions = await _context.Prescriptions
                 .Where(p => p.CustomerId == userId)
                 .OrderByDescending(p => p.DateIssued)
-                .ToList();
+                .ToListAsync();
+
             return View(prescriptions);
         }
     }
