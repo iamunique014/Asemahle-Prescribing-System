@@ -28,7 +28,8 @@
                     <tr>
                         <td>@prescription.DateIssued.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>
-                            <a href="@prescription.FilePath" target="_blank" class="btn btn-sm btn-primary">
+                            <a href="@Url.Action("Download", "Prescription", new { id = prescription.PrescriptionId })"
+                               class="btn btn-sm btn-primary">
                                 View / Download
                             </a>
                         </td>
