@@ -23,9 +23,19 @@ namespace PrescribingSystem.Models
 
         public string FilePath { get; set; }
 
-        public string PrescriptionStatus { get; set; }
+        //public string PrescriptionStatus { get; set; }
+
+        public PrescriptionStatus PrescriptionStatus { get; set; } = PrescriptionStatus.Pending;
 
         // Navigation property
         public ICollection<MedicationItem> MedicationItems { get; set; } = new List<MedicationItem>();
+    }
+    public enum PrescriptionStatus
+    {
+        Pending = 0,
+        Approved = 1,
+        ReadyForCollection = 2,
+        Collected = 3,
+        Rejected = 4
     }
 }
