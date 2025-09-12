@@ -111,7 +111,7 @@ namespace PrescribingSystem.Controllers
                     RemainingRepeats = model.TotalRepeats,
                     TotalCost = model.Medications?.Sum(m => m.Price * m.Quantity) ?? 0,
                     FilePath = $"/uploads/prescriptions/{fileName}",
-                    PrescriptionStatus = "Pending"
+                    PrescriptionStatus = PrescriptionStatus.Pending
                 };
 
                 _context.Prescriptions.Add(prescription);
