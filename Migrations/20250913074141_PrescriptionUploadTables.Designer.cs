@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PrescribingSystem.Data;
 
@@ -11,9 +12,11 @@ using PrescribingSystem.Data;
 namespace PrescribingSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250913074141_PrescriptionUploadTables")]
+    partial class PrescriptionUploadTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -740,6 +743,9 @@ namespace PrescribingSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("DateIssued")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("DoctorName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -748,15 +754,8 @@ namespace PrescribingSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("PrescriptionDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("PrescriptionStatus")
                         .HasColumnType("int");
-
-                    b.Property<string>("RawText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("decimal(18,2)");
