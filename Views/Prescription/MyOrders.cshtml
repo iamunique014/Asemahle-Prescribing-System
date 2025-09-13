@@ -1,0 +1,49 @@
+﻿@model IEnumerable<PrescribingSystem.Models.PrescriptionOrders>
+
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+@{
+    Layout = "_CustomerLayout";
+}
+
+<div class="container mt-4">
+    <h2>My Orders</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You have not uploaded any prescriptions yet.
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped table-dark">
+            <thead>
+                <tr>
+                    <th>Order Date</th>
+                    <th>PrescriptionId</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>@order.OrderDate.ToString("dddd, dd, MMMM, HH:mm")</td>
+                        <td>@order.PrescriptionId</td>
+                        <td>@Enum.GetName(typeof(OrderStatus), order.OrderStatus)</td>
+                        <td>
+                            <a href="@Url.Action("DeleteOrder", "Prescription", new { orderId = order.PrescriptionOrdersId })"
+                               class="btn btn-outline-primary">
+                                View / Download
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
