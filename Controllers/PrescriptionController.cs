@@ -167,11 +167,17 @@ namespace PrescribingSystem.Controllers
 
             _context.SaveChanges();
 
-            return RedirectToAction("MyPrescriptions");
-            //return RedirectToAction("PrescriptionOrders");
+            return RedirectToAction("MyOrders");
         }
 
+        public IActionResult MyOrders()
+        {
+            string customerId = "8a43dadf-0a54-4703-b40b-c55784374498";
 
+            var orders = _context.PrescriptionOrders;
+
+            return View(orders);
+        }
 
 
 
