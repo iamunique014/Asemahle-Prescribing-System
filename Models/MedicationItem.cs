@@ -18,9 +18,11 @@ namespace PrescribingSystem.Models
         public int MedicationId { get; set; }
         public Medication Medication { get; set; }
 
+        public int TotalRepeats { get; set; }
+        public int RemainingRepeats { get; set; }
+
         // Prescription-specific fields
         public string Dosage { get; set; }  // Can override catalog dosage
         public int Quantity { get; set; }
-        public decimal Price { get; set; } // Price at time of prescription
     }
 }

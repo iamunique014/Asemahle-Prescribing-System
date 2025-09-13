@@ -13,17 +13,13 @@ namespace PrescribingSystem.Models
         [Required]
         public string DoctorName { get; set; }
 
-        public DateTime DateIssued { get; set; }
-
-        public int TotalRepeats { get; set; }
-
-        public int RemainingRepeats { get; set; }
+        public DateTime PrescriptionDate { get; set; }
 
         public decimal TotalCost { get; set; }
 
         public string FilePath { get; set; }
 
-        //public string PrescriptionStatus { get; set; }
+        public string RawText { get; set; }
 
         public PrescriptionStatus PrescriptionStatus { get; set; } = PrescriptionStatus.Pending;
 
