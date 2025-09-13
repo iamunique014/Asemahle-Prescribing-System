@@ -152,7 +152,24 @@ namespace PrescribingSystem.Controllers
             return View(prescription);
         }
 
+        public IActionResult DispenseRequest(int prescriptionId)
+        {
+            var prescriptionOrder = new PrescriptionOrders
+            {
+                CustomerId = "8a43dadf-0a54-4703-b40b-c55784374498", // Or use UserManager to get UserId
+                PrescriptionId = prescriptionId,
+                OrderDate = DateTime.UtcNow,
+                OrderStatus = OrderStatus.Pending,
+                IsDeleted = IsDeleted.Active
+            };
+                
+            _context.PrescriptionOrders.Add(prescriptionOrder);
 
+            _context.SaveChanges();
+
+            return RedirectToAction("MyPrescriptions");
+            //return RedirectToAction("PrescriptionOrders");
+        }
 
 
 

@@ -34,6 +34,7 @@ namespace PrescribingSystem.Data
         //Customer Subsystem Tables
         public DbSet<Prescription> Prescriptions { get; set; }
         public DbSet<MedicationItem> MedicationItems { get; set; }
+        public DbSet<PrescriptionOrders> PrescriptionOrders { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
