@@ -127,7 +127,7 @@ namespace PrescribingSystem.Controllers
 
         // GET: /Prescription/MyPrescriptions
         public async Task<IActionResult> MyPrescriptions()
-        {
+            {
             var userId = "8a43dadf-0a54-4703-b40b-c55784374498"; // Or use UserManager to get UserId
 
             var prescriptions = await _context.Prescriptions
@@ -137,6 +137,35 @@ namespace PrescribingSystem.Controllers
 
             return View(prescriptions);
         }
+
+        // GET: /Prescription/PrescriptionDetails
+        [HttpGet]
+        public IActionResult PrescriptionDetails(int prescriptionId)
+        {
+            var userId = "8a43dadf-0a54-4703-b40b-c55784374498"; // Or use UserManager to get UserId
+
+            var prescription = _context.Prescriptions
+                .Include(p => p.MedicationItems)
+                .ThenInclude(mi => mi.Medication)
+                .FirstOrDefault(p => p.CustomerId == userId && p.PrescriptionId == prescriptionId);
+
+            return View(prescription);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         private IActionResult ReloadView(PrescriptionUploadViewModel model)
         {
@@ -153,9 +182,9 @@ namespace PrescribingSystem.Controllers
         }
        
 
-        public async Task<IActionResult> Download(int id)
+        public async Task<IActionResult> Download(int prescriptionId)
         {
-            var prescription = await _context.Prescriptions.FindAsync(id);
+            var prescription = await _context.Prescriptions.FindAsync(prescriptionId);
             if (prescription == null)
                 return NotFound();
 

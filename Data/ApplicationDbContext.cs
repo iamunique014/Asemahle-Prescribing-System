@@ -65,13 +65,6 @@ namespace PrescribingSystem.Data
                    .HasForeignKey(mi => mi.MedicationId)
                    .OnDelete(DeleteBehavior.Restrict); // Prevent deleting Medication if used in prescription
         }
-
-
-
-
-
     }
-    
-
 }
 
