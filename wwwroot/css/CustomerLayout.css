@@ -49,6 +49,11 @@ header .image-text .header-text {
     flex-direction: column;
 }
 
+.header-text a{
+    text-decoration: none;
+    margin-left: 1.5em;
+}
+
 .header-text .name {
     font-weight: 600;
 }
