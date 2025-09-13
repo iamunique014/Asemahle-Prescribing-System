@@ -125,6 +125,19 @@ namespace PrescribingSystem.Controllers
             }
         }
 
+        // GET: /Prescription/MyPrescriptions
+        public async Task<IActionResult> MyPrescriptions()
+        {
+            var userId = "8a43dadf-0a54-4703-b40b-c55784374498"; // Or use UserManager to get UserId
+
+            var prescriptions = await _context.Prescriptions
+                .Where(p => p.CustomerId == userId)
+                .OrderByDescending(p => p.PrescriptionDate)
+                .ToListAsync();
+
+            return View(prescriptions);
+        }
+
         private IActionResult ReloadView(PrescriptionUploadViewModel model)
         {
             ViewBag.Medications = _context.Medication
@@ -138,18 +151,7 @@ namespace PrescribingSystem.Controllers
 
             return View("Upload", model);
         }
-        // GET: /Prescription/MyPrescriptions
-        public async Task<IActionResult> MyPrescriptions()
-        {
-            var userId = "8a43dadf-0a54-4703-b40b-c55784374498"; // Or use UserManager to get UserId
-
-            var prescriptions = await _context.Prescriptions
-                .Where(p => p.CustomerId == userId)
-                .OrderByDescending(p => p.PrescriptionDate)
-                .ToListAsync();
-
-            return View(prescriptions);
-        }
+       
 
         public async Task<IActionResult> Download(int id)
         {
