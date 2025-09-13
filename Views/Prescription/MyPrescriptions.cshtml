@@ -4,6 +4,10 @@
     ViewData["Title"] = "My Prescriptions";
 }
 
+@{
+    Layout = "_CustomerLayout";
+}
+
 <div class="container mt-4">
     <h2>My Prescriptions</h2>
 
@@ -22,7 +26,7 @@
                     <th>Doctor Name</th>
                     <th>Status</th>
                     <th>File</th>
-                    <th></th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,13 +37,13 @@
                         <td>@prescription.DoctorName</td>
                         <td>@Enum.GetName(typeof(PrescriptionStatus), prescription.PrescriptionStatus)</td>
                         <td>
-                            <a href="@Url.Action("Download", "Prescription", new { id = prescription.PrescriptionId })"
-                               class="btn btn-primary">
+                            <a href="@Url.Action("Download", "Prescription", new { prescriptionId = prescription.PrescriptionId })"
+                               class="btn btn-outline-primary">
                                 View / Download
                             </a>
                         </td>
                         <td>
-                            <a href="@Url.Action("PrescriptionDetails", "Prescription", new { id = prescription.PrescriptionId })"
+                            <a href="@Url.Action("PrescriptionDetails", "Prescription", new { prescriptionId = prescription.PrescriptionId })"
                                class="btn btn-success">
                                 Open
                             </a>
