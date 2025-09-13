@@ -1,0 +1,47 @@
+﻿@model PrescribingSystem.Models.Prescription
+@{
+    ViewData["Title"] = "Prescription Details";
+}
+
+<div class="container mt-4">
+    <h2>Prescriptions Details</h2>
+
+    <div class="prescription-details bg-light rounded p-2 mb-3">
+        <h3>Date: @Model.PrescriptionDate.ToString("dddd, dd, MMMM, HH:mm")</h3>
+        <h3>Doctor: @Model.DoctorName</h3>
+        <h3>Status: @Enum.GetName(typeof(PrescriptionStatus), Model.PrescriptionStatus)</h3>
+        <h3>Total Cost: @Model.TotalCost</h3>
+    </div>
+    <div class="medications">
+        <table class="table table-striped table-dark bg-dark rounded">
+            <thead>
+                <tr>
+                    <th>Name:</th>
+                    <th>Dosage</th>
+                    <th>Quantity</th>
+                    <th>TotalRepeats</th>
+                    <th>RemainingRepeats</th>                   
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var medication in Model.MedicationItems)
+                {
+                    <tr>
+                        <td>@medication.Medication.Name</td>
+                        <td>@medication.Dosage</td>
+                        <td>@medication.Quantity</td>
+                        <td>@medication.TotalRepeats</td>
+                        <td>@medication.RemainingRepeats</td>                       
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <a href="@Url.Action("DispenseRequest", "Prescription", new { prescriptionId = Model.PrescriptionId })"
+           class="btn btn-primary">
+            Request Dispensing
+        </a>
+
+    </div>
+
+</div>
