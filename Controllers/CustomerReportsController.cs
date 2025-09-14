@@ -24,15 +24,18 @@ namespace PrescribingSystem.Controllers
 
         public async Task<IActionResult> DispensedPrescriptionPdf(DateTime fromDate, DateTime to, string groupBy)
         {
+            string customerId = "3";
+
             // Query prescriptions joined with PrescriptionOrders and MedicationItems
             var data = await (from p in _context.Prescriptions
                               join o in _context.PrescriptionOrders
                                   on p.PrescriptionId equals o.PrescriptionId
                               from m in _context.MedicationItems
                                   .Where(mi => mi.PrescriptionId == p.PrescriptionId)
-                              where p.PrescriptionDate >= fromDate 
+                              where p.CustomerId == customerId
+                                    && p.PrescriptionDate >= fromDate 
                                     && p.PrescriptionDate <= to
-                                    && p.PrescriptionStatus == PrescriptionStatus.Collected
+                                    && p.PrescriptionStatus == PrescriptionStatus.ReadyForCollection
                                     && o.OrderStatus == OrderStatus.ReadyForCollection
                               select new DispensedPrescriptionReportVM
                               {

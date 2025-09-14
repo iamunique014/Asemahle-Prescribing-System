@@ -91,7 +91,7 @@ namespace PrescribingSystem.Controllers
 
                 var prescription = new Prescription
                 {
-                    CustomerId = "8a43dadf-0a54-4703-b40b-c55784374498",
+                    CustomerId = "1",
                     DoctorName = null,
                     PrescriptionDate = DateTime.UtcNow,
                     TotalCost = 0,
@@ -128,7 +128,7 @@ namespace PrescribingSystem.Controllers
         // GET: /Prescription/MyPrescriptions
         public async Task<IActionResult> MyPrescriptions()
             {
-            var userId = "8a43dadf-0a54-4703-b40b-c55784374498"; // Or use UserManager to get UserId
+            var userId = "1"; // Or use UserManager to get UserId
 
             var prescriptions = await _context.Prescriptions
                 .Where(p => p.CustomerId == userId)
@@ -142,7 +142,7 @@ namespace PrescribingSystem.Controllers
         [HttpGet]
         public IActionResult PrescriptionDetails(int prescriptionId)
         {
-            var userId = "8a43dadf-0a54-4703-b40b-c55784374498"; // Or use UserManager to get UserId
+            var userId = "1"; // Or use UserManager to get UserId
 
             var prescription = _context.Prescriptions
                 .Include(p => p.MedicationItems)
@@ -156,7 +156,7 @@ namespace PrescribingSystem.Controllers
         {
             var prescriptionOrder = new PrescriptionOrders
             {
-                CustomerId = "8a43dadf-0a54-4703-b40b-c55784374498", // Or use UserManager to get UserId
+                CustomerId = "1", // Or use UserManager to get UserId
                 PrescriptionId = prescriptionId,
                 OrderDate = DateTime.UtcNow,
                 OrderStatus = OrderStatus.Pending,
@@ -172,7 +172,7 @@ namespace PrescribingSystem.Controllers
 
         public IActionResult MyOrders()
         {
-            string customerId = "8a43dadf-0a54-4703-b40b-c55784374498";
+            string customerId = "1";
 
             var orders = _context.PrescriptionOrders;
 
