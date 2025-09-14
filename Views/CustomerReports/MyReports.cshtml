@@ -1,0 +1,18 @@
+﻿
+
+<form asp-controller="CustomerReports" asp-action="DispensedPrescriptionPdf" method="get">
+    <label>From:</label>
+    <input type="date" name="fromDate" required />
+
+    <label>To:</label>
+    <input type="date" name="to" required />
+
+    <label>Group By:</label>
+    <select name="groupBy">
+        <option value="Patient">Patient</option>
+        <option value="Doctor">Doctor</option>
+        <option value="Medication">Medication</option>
+    </select>
+
+    <button type="submit">Generate PDF</button>
+</form>
