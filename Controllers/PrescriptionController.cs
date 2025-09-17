@@ -174,7 +174,8 @@ namespace PrescribingSystem.Controllers
         {
             string customerId = "1";
 
-            var orders = _context.PrescriptionOrders;
+            var orders = _context.PrescriptionOrders
+                .Where(p => p.CustomerId == customerId);
 
             return View(orders);
         }
