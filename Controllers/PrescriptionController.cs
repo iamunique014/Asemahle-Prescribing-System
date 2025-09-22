@@ -104,7 +104,7 @@ namespace PrescribingSystem.Controllers
                 await _context.SaveChangesAsync();
 
 
-                await _context.SaveChangesAsync();
+                //await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 TempData["Success"] = "Prescription uploaded successfully!";
