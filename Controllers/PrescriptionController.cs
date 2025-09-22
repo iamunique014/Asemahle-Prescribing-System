@@ -92,12 +92,13 @@ namespace PrescribingSystem.Controllers
                 var prescription = new Prescription
                 {
                     CustomerId = "1",
-                    DoctorName = null,
+                    DoctorName = "Dr Masango",
                     PrescriptionDate = DateTime.UtcNow,
                     TotalCost = 0,
                     FilePath = $"/uploads/prescriptions/{fileName}",
                     PrescriptionStatus = PrescriptionStatus.Pending,
-                    RawText = rawText
+                    RawText = rawText,
+                    ShouldProcess = model.ShouldProcess
                 };
 
                 _context.Prescriptions.Add(prescription);

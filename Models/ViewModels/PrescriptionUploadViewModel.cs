@@ -7,6 +7,6 @@ namespace PrescribingSystem.Models.ViewModels
 
         [Required]
         public IFormFile PrescriptionFile { get; set; }
-
+        public bool ShouldProcess { get; set; } = true;
     }
 }

@@ -24,6 +24,7 @@
                 <tr>
                     <th>Uploaded At</th>
                     <th>Doctor Name</th>
+                    <th>Should Process</th>
                     <th>Status</th>
                     <th>File</th>
                     <th>Actions</th>
@@ -35,6 +36,10 @@
                     <tr>
                         <td>@prescription.PrescriptionDate.ToString("dddd, dd, MMMM, HH:mm")</td>
                         <td>@prescription.DoctorName</td>
+                        <td>
+                            @(prescription.ShouldProcess == true ? "Yes" :
+                                                prescription.ShouldProcess == false ? "No" : "Pending")
+                        </td>
                         <td>@Enum.GetName(typeof(PrescriptionStatus), prescription.PrescriptionStatus)</td>
                         <td>
                             <a href="@Url.Action("Download", "Prescription", new { prescriptionId = prescription.PrescriptionId })"

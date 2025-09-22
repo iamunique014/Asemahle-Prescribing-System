@@ -21,6 +21,9 @@ namespace PrescribingSystem.Models
 
         public string RawText { get; set; }
 
+        // NEW FIELD: customer decides if pharmacist should process
+        public bool ShouldProcess { get; set; } = false;
+
         public PrescriptionStatus PrescriptionStatus { get; set; } = PrescriptionStatus.Pending;
 
         // Navigation property

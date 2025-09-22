@@ -13,6 +13,13 @@
         <span asp-validation-for="PrescriptionFile" class="text-danger"></span>
     </div>
 
+    <div class="form-group form-check mt-3">
+        <input asp-for="ShouldProcess" class="form-check-input" type="checkbox" checked />
+        <label asp-for="ShouldProcess" class="form-check-label">
+            Process this prescription immediately
+        </label>
+    </div>
+
     <div class="form-group mt-3">
         <button type="submit" class="btn btn-primary">Upload Prescription</button>
     </div>
