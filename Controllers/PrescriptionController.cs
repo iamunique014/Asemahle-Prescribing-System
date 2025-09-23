@@ -128,7 +128,7 @@ namespace PrescribingSystem.Controllers
 
         // GET: /Prescription/MyPrescriptions
         public async Task<IActionResult> MyPrescriptions()
-            {
+        {
             var userId = "1"; // Or use UserManager to get UserId
 
             var prescriptions = await _context.Prescriptions
@@ -149,8 +149,23 @@ namespace PrescribingSystem.Controllers
                 .Include(p => p.MedicationItems)
                 .ThenInclude(mi => mi.Medication)
                 .FirstOrDefault(p => p.CustomerId == userId && p.PrescriptionId == prescriptionId);
-
+            
             return View(prescription);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateShouldProcess(int prescriptionId, bool shouldProcess)
+        {
+            var prescription = await _context.Prescriptions.FindAsync(prescriptionId);
+            if (prescription == null)
+                return NotFound();
+
+            prescription.ShouldProcess = shouldProcess;
+            _context.Update(prescription);
+            await _context.SaveChangesAsync();
+
+            // go back to details view
+            return RedirectToAction("PrescriptionDetails", new { PrescriptionId = prescriptionId });
         }
 
         public IActionResult DispenseRequest(int prescriptionId)
