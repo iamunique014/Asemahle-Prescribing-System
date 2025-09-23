@@ -4,7 +4,7 @@
 }
 
 <div class="container mt-4">
-    <h2>Prescriptions Details</h2>
+    <h2>Prescription Details</h2>
 
     <div class="prescription-details bg-light rounded p-2 mb-3">
         <h3>Date: @Model.PrescriptionDate.ToString("dddd, dd, MMMM, HH:mm")</h3>
@@ -12,36 +12,66 @@
         <h3>Status: @Enum.GetName(typeof(PrescriptionStatus), Model.PrescriptionStatus)</h3>
         <h3>Total Cost: @Model.TotalCost</h3>
     </div>
+
     <div class="medications">
-        <table class="table table-striped table-dark bg-dark rounded">
-            <thead>
-                <tr>
-                    <th>Name:</th>
-                    <th>Dosage</th>
-                    <th>Quantity</th>
-                    <th>TotalRepeats</th>
-                    <th>RemainingRepeats</th>                   
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var medication in Model.MedicationItems)
-                {
+        @if (Model.MedicationItems.Any())
+        {
+            <table class="table table-striped table-dark bg-dark rounded">
+                <thead>
                     <tr>
-                        <td>@medication.Medication.Name</td>
-                        <td>@medication.Dosage</td>
-                        <td>@medication.Quantity</td>
-                        <td>@medication.TotalRepeats</td>
-                        <td>@medication.RemainingRepeats</td>                       
+                        <th>Name:</th>
+                        <th>Dosage</th>
+                        <th>Quantity</th>
+                        <th>Total Repeats</th>
+                        <th>Remaining Repeats</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var medication in Model.MedicationItems)
+                    {
+                        <tr>
+                            <td>@medication.Medication.Name</td>
+                            <td>@medication.Dosage</td>
+                            <td>@medication.Quantity</td>
+                            <td>@medication.TotalRepeats</td>
+                            <td>@medication.RemainingRepeats</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
 
-        <a href="@Url.Action("DispenseRequest", "Prescription", new { prescriptionId = Model.PrescriptionId })"
-           class="btn btn-primary">
-            Request Dispensing
-        </a>
+        @if (Model.PrescriptionStatus == PrescriptionStatus.Pending)
+        {
+            <!-- Form to update ShouldProcess -->
+            <form asp-action="UpdateShouldProcess" asp-controller="Prescription" method="post">
+                <input type="hidden" asp-for="PrescriptionId" />
 
+                <div class="form-group form-check mt-3">
+                    <input asp-for="ShouldProcess" class="form-check-input" type="checkbox" />
+                    <label asp-for="ShouldProcess" class="form-check-label">
+                        Process this prescription immediately
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-success">Save</button>
+            </form>
+        }
+
+       
+        <!-- Conditional buttons -->
+        @if (Model.ShouldProcess == true && Model.PrescriptionStatus == PrescriptionStatus.Processed)
+        {
+            <a href="@Url.Action("DispenseRequest", "Prescription", new { prescriptionId = Model.PrescriptionId })"
+               class="btn btn-primary mt-2">
+                Request Dispensing
+            </a>
+        }
+        else if (Model.ShouldProcess == true && Model.PrescriptionStatus == PrescriptionStatus.Pending)
+        {
+            <button class="btn btn-secondary mt-2" disabled>
+                Request Dispensing (waiting for pharmacist)
+            </button>
+        }
     </div>
-
-</div>
+</div>z
