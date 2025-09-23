@@ -32,7 +32,7 @@ namespace PrescribingSystem.Models
     public enum PrescriptionStatus
     {
         Pending = 0,
-        Approved = 1,
+        Processed = 1,
         ReadyForCollection = 2,
         Collected = 3,
         Rejected = 4
