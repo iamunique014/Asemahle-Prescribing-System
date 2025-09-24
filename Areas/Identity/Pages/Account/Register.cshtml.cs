@@ -146,25 +146,28 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
 
 
                 await _userManager.AddToRoleAsync(user, "Customer");
-                var userId = await _userManager.GetUserIdAsync(user);
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                var callbackUrl = Url.Page(
-                    "/Account/ConfirmEmail",
-                    pageHandler: null,
-                    values: new { area = "Identity", userId = user.Id, code = code },
-                    protocol: Request.Scheme);
+                return RedirectToAction("AddCustomerAllergies", "Customer");
 
-                await _emailSender.SendEmailAsync(user.Email, "Confirm Your Email",
-                   $"An account with Ibhayi Pharmacy has been created for you. <br>" +
-                   $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.<br><br>" +
-                   $"Your login details: <br>" +
-                   $"Health Council Registration Number: <b>{user.HealthCouncilRegistrationNumber}</b><br>" +
-                   $"Password: <b>{generatedPassword}</b><br>" +
-                   $"You cannot log in until your email is confirmed, please use above details to login once account has been confirmed.");
+                //var userId = await _userManager.GetUserIdAsync(user);
+                //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                //code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                return RedirectToPage("/Account/RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                //var callbackUrl = Url.Page(
+                //    "/Account/ConfirmEmail",
+                //    pageHandler: null,
+                //    values: new { area = "Identity", userId = user.Id, code = code },
+                //    protocol: Request.Scheme);
+
+                //await _emailSender.SendEmailAsync(user.Email, "Confirm Your Email",
+                //   $"An account with Ibhayi Pharmacy has been created for you. <br>" +
+                //   $"Please confirm your email by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.<br><br>" +
+                //   $"Your login details: <br>" +
+                //   $"Health Council Registration Number: <b>{user.HealthCouncilRegistrationNumber}</b><br>" +
+                //   $"Password: <b>{generatedPassword}</b><br>" +
+                //   $"You cannot log in until your email is confirmed, please use above details to login once account has been confirmed.");
+
+                //return RedirectToPage("/Account/RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
             }
 
             foreach (var error in result.Errors)
@@ -175,9 +178,36 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private string GeneratePassword()
+        //Improved Mthod to ensure all password requirements are met.
+        private string GeneratePassword(int length = 12)
         {
-            return $"IBP{Guid.NewGuid().ToString().Substring(0, 9)}!";
+            const string lowercase = "abcdefghijklmnopqrstuvwxyz";
+            const string uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const string numbers = "0123456789";
+            const string specialChars = "!@#$%&^*()_+";
+
+            var allChars = lowercase + uppercase + numbers + specialChars;
+            var random = new Random();
+
+            //Ensure at least one of each character type
+            var password = new Char[]
+            {
+                lowercase[random.Next(lowercase.Length)],
+                uppercase[random.Next(uppercase.Length)],
+                numbers[random.Next(numbers.Length)],
+                specialChars[random.Next(specialChars.Length)]
+            };
+
+            //Fill the rest of the  password length
+            for (int i = 7; i < length; i++) 
+            {
+                password = password.Append(allChars[random.Next(allChars.Length)]).ToArray();
+            }
+
+            //
+            return "IBP" + new string(password.OrderBy(x => random.Next()).ToArray());
+            
+            // return $"IBP{Guid.NewGuid().ToString().Substring(0, 9)}!";
         }
 
         public async Task<IActionResult> OnGetConfirmEmailAsync(string userId, string code)
