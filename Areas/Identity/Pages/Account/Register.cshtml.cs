@@ -80,18 +80,18 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
             [Required]
             [Display(Name = "Last Name")]
             public string LastName { get; set; }
-            [Required]
-            [Display(Name = "Health Council Registration Number")]
-            public string HealthCouncilRegistrationNumber { get; set; }
+            //[Required]
+            //[Display(Name = "Health Council Registration Number")]
+            //public string HealthCouncilRegistrationNumber { get; set; }
             [Required]
             [Display(Name = "Identity Number")]
             public string IdentityNumber { get; set; }
-            [Required]
-            [Display(Name = "Role")]
-            public string Role { get; set; }
+            //[Required]
+            //[Display(Name = "Role")]
+            //public string Role { get; set; }
 
-            [ValidateNever]
-            public IEnumerable<SelectListItem> RoleList { get; set; }
+            //[ValidateNever]
+            //public IEnumerable<SelectListItem> RoleList { get; set; }
 
             //[Required]
             //[StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
@@ -111,14 +111,14 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            Input = new InputModel()
-            {
-                RoleList = _roleManager.Roles.Select(x => x.Name).Select(i => new SelectListItem
-                {
-                    Text = i,
-                    Value = i
-                })
-            };
+            //Input = new InputModel()
+            //{
+            //    RoleList = _roleManager.Roles.Select(x => x.Name).Select(i => new SelectListItem
+            //    {
+            //        Text = i,
+            //        Value = i
+            //    })
+            //};
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -133,7 +133,7 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
                 Email = Input.Email,
                 FirstName = Input.FirstName,
                 LastName = Input.LastName,
-                HealthCouncilRegistrationNumber = Input.HealthCouncilRegistrationNumber,
+                //HealthCouncilRegistrationNumber = Input.HealthCouncilRegistrationNumber,
                 IdentityNumber = Input.IdentityNumber
             };
 
@@ -145,7 +145,7 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
                 await _userManager.AddClaimAsync(user, new Claim("LastName", user.LastName));
 
 
-                await _userManager.AddToRoleAsync(user, Input.Role);
+                await _userManager.AddToRoleAsync(user, "Customer");
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
