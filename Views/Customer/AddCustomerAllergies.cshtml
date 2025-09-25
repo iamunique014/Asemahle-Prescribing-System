@@ -1,14 +1,19 @@
-﻿@model IEnumerable<PrescribingSystem.Models.ViewModels.ActiveIngredientViewModel>
+﻿@model PrescribingSystem.Models.ViewModels.AddCustomerAllergiesViewModel
 
-<h2>Active Ingredients</h2>
+<h2>Select Allergies</h2>
 
-<form>
-    @foreach(var ingredient in Model)
+<form asp-action="AddCustomerAllergies" asp-controller="Customer" method="post">
+    <input type="hidden" asp-for="UserId" />
+
+    @foreach (var ingredient in Model.ActiveIngredients)
     {
         <div>
-            <input type="checkbox" name="selectedAllergies" value="@ingredient.id" />
+            <input type="checkbox"
+                   name="SelectedAllergies"
+                   value="@ingredient.id" />
             @ingredient.Name
         </div>
     }
+
     <button type="submit">Save Allergies</button>
 </form>
