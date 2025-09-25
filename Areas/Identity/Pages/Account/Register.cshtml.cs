@@ -147,7 +147,7 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
 
                 await _userManager.AddToRoleAsync(user, "Customer");
 
-                return RedirectToAction("AddCustomerAllergies", "Customer");
+                return RedirectToAction("AddCustomerAllergies", "Customer", new { id = user.Id });
 
                 //var userId = await _userManager.GetUserIdAsync(user);
                 //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
