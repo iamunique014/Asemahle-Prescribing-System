@@ -54,6 +54,14 @@ namespace PrescribingSystem.Data
                 .WithMany(ai => ai.UserAllergies)
                 .HasForeignKey(ua => ua.ActiveIngredientId);
 
+            // Prescription → Customer (ApplicationUser)
+            builder.Entity<Prescription>()
+                .HasOne(p => p.Customer)
+                .WithMany(u => u.Prescriptions)
+                .HasForeignKey(p => p.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Prescription → MedicationItems
             builder.Entity<Prescription>()
                .HasMany(p => p.MedicationItems)
                .WithOne(mi => mi.Prescription)

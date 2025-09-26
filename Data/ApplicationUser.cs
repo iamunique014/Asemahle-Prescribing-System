@@ -14,6 +14,7 @@ namespace PrescribingSystem.Data
         public string IdentityNumber { get; set; }
         public ICollection<UserAllergy> Allergies { get; set; }
 
-        //public ICollection<CustomerAllergies> CustomerAllergies { get; set; } = new List<CustomerAllergies>();
+        // Link to prescriptions
+        public ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using PrescribingSystem.Data;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PrescribingSystem.Models
 {
@@ -9,6 +11,9 @@ namespace PrescribingSystem.Models
 
         [Required]
         public string CustomerId { get; set; }  // Assuming Identity User Id
+
+        [ForeignKey(nameof(CustomerId))]
+        public ApplicationUser Customer { get; set; }   // Navigation property
 
         [Required]
         public string DoctorName { get; set; }
