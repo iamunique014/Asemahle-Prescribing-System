@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using PrescribingSystem.Data;
 using PrescribingSystem.Models;
 using PrescribingSystem.Models.ViewModels;
+using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Path = System.IO.Path;
 
@@ -33,6 +34,7 @@ namespace PrescribingSystem.Controllers
         }
 
         //POST: /Prescription/Upload
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload(PrescriptionUploadViewModel model)
@@ -91,7 +93,7 @@ namespace PrescribingSystem.Controllers
 
                 var prescription = new Prescription
                 {
-                    CustomerId = "1",
+                    CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                     DoctorName = "Dr Masango",
                     PrescriptionDate = DateTime.UtcNow,
                     TotalCost = 0,
@@ -129,7 +131,7 @@ namespace PrescribingSystem.Controllers
         // GET: /Prescription/MyPrescriptions
         public async Task<IActionResult> MyPrescriptions()
         {
-            var userId = "1"; // Or use UserManager to get UserId
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var prescriptions = await _context.Prescriptions
                 .Where(p => p.CustomerId == userId)
@@ -143,7 +145,7 @@ namespace PrescribingSystem.Controllers
         [HttpGet]
         public IActionResult PrescriptionDetails(int prescriptionId)
         {
-            var userId = "1"; // Or use UserManager to get UserId
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
 
             var prescription = _context.Prescriptions
                 .Include(p => p.MedicationItems)
@@ -170,9 +172,17 @@ namespace PrescribingSystem.Controllers
 
         public IActionResult DispenseRequest(int prescriptionId)
         {
+            //Runs check for valid userId
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                // User not logged in → redirect to login
+                return RedirectToPage("/Account/Login");
+            }
+
             var prescriptionOrder = new PrescriptionOrders
             {
-                CustomerId = "1", // Or use UserManager to get UserId
+                CustomerId = userId,
                 PrescriptionId = prescriptionId,
                 OrderDate = DateTime.UtcNow,
                 OrderStatus = OrderStatus.Pending,
@@ -188,7 +198,7 @@ namespace PrescribingSystem.Controllers
 
         public IActionResult MyOrders()
         {
-            string customerId = "1";
+            string customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var orders = _context.PrescriptionOrders
                 .Where(p => p.CustomerId == customerId);
