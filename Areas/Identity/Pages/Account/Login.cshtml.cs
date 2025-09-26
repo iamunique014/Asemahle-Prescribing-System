@@ -127,7 +127,7 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
                         }
                         else if (roles.Contains("Customer"))
                         {
-                            return RedirectToAction("CustomerHome", "Customer");
+                            return RedirectToAction("Landing", "Landing");
                         }
                         else if (roles.Contains("Pharmacy"))
                         {

@@ -137,7 +137,7 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
                 IdentityNumber = Input.IdentityNumber
             };
 
-            var result = await _userManager.CreateAsync(user, generatedPassword);
+            var result = await _userManager.CreateAsync(user, "Tester@1234");
             if (result.Succeeded)
             {
                 // Add FirstName and LastName as claims
