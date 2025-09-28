@@ -94,7 +94,7 @@ namespace PrescribingSystem.Controllers
                 var prescription = new Prescription
                 {
                     CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    DoctorName = "Dr Masango",
+                    DoctorName = "Dr Thukuthela",
                     PrescriptionDate = DateTime.UtcNow,
                     TotalCost = 0,
                     FilePath = $"/uploads/prescriptions/{fileName}",
@@ -151,7 +151,17 @@ namespace PrescribingSystem.Controllers
                 .Include(p => p.MedicationItems)
                 .ThenInclude(mi => mi.Medication)
                 .FirstOrDefault(p => p.CustomerId == userId && p.PrescriptionId == prescriptionId);
-            
+
+            if (prescription == null)
+                return NotFound();
+
+            // Only calculate if prescription is processed
+            if (prescription.PrescriptionStatus == PrescriptionStatus.Processed)
+            {
+                prescription.TotalCost = prescription.MedicationItems
+                    .Sum(mi => mi.Quantity * mi.Medication.CurrentSalesPrice);
+            }
+
             return View(prescription);
         }
 
@@ -174,6 +184,7 @@ namespace PrescribingSystem.Controllers
         {
             //Runs check for valid userId
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (string.IsNullOrEmpty(userId))
             {
                 // User not logged in → redirect to login
