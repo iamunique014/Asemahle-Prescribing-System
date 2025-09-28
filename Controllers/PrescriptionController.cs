@@ -131,10 +131,10 @@ namespace PrescribingSystem.Controllers
         // GET: /Prescription/MyPrescriptions
         public async Task<IActionResult> MyPrescriptions()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var prescriptions = await _context.Prescriptions
-                .Where(p => p.CustomerId == userId)
+                .Where(p => p.CustomerId == customerId)
                 .OrderByDescending(p => p.PrescriptionDate)
                 .ToListAsync();
 
@@ -145,12 +145,12 @@ namespace PrescribingSystem.Controllers
         [HttpGet]
         public IActionResult PrescriptionDetails(int prescriptionId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
 
             var prescription = _context.Prescriptions
                 .Include(p => p.MedicationItems)
                 .ThenInclude(mi => mi.Medication)
-                .FirstOrDefault(p => p.CustomerId == userId && p.PrescriptionId == prescriptionId);
+                .FirstOrDefault(p => p.CustomerId == customerId && p.PrescriptionId == prescriptionId);
 
             if (prescription == null)
                 return NotFound();
@@ -183,17 +183,34 @@ namespace PrescribingSystem.Controllers
         public IActionResult DispenseRequest(int prescriptionId)
         {
             //Runs check for valid userId
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(customerId))
             {
                 // User not logged in → redirect to login
                 return RedirectToPage("/Account/Login");
             }
 
+            //Getting prescription details so i can determine if remainingrepeats
+            var prescription = _context.Prescriptions
+                .Include(p => p.MedicationItems)
+                .FirstOrDefault(p => p.PrescriptionId == prescriptionId && p.CustomerId == customerId);
+
+            if (prescription == null)
+            {
+                return NotFound();
+            }
+
+            // Allow request only if at least one item still has repeats left
+            if (!prescription.MedicationItems.Any(mi => mi.RemainingRepeats > 0))
+            {
+                TempData["ErrorMessage"] = "You have no repeats left for this prescription.";
+                return RedirectToAction("PrescriptionDetails", new { prescriptionId });
+            }
+
             var prescriptionOrder = new PrescriptionOrders
             {
-                CustomerId = userId,
+                CustomerId = customerId,
                 PrescriptionId = prescriptionId,
                 OrderDate = DateTime.UtcNow,
                 OrderStatus = OrderStatus.Pending,
@@ -202,14 +219,28 @@ namespace PrescribingSystem.Controllers
                 
             _context.PrescriptionOrders.Add(prescriptionOrder);
 
+            // Decrease RemainingRepeats only for items that still have repeats
+            foreach (var item in prescription.MedicationItems.Where(mi => mi.RemainingRepeats > 0))
+            {
+                item.RemainingRepeats -= 1;
+            }
+
             _context.SaveChanges();
 
+
+            TempData["SuccessMessage"] = "Your dispensing request has been submitted.";
             return RedirectToAction("MyOrders");
         }
 
         public IActionResult MyOrders()
         {
             string customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(customerId))
+            {
+                // User not logged in → redirect to login
+                return RedirectToPage("/Account/Login");
+            }
 
             var orders = _context.PrescriptionOrders
                 .Where(p => p.CustomerId == customerId);
