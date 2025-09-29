@@ -63,69 +63,55 @@ namespace PrescribingSystem.Controllers
                 return View(model);
             }
 
-            // Start transaction for atomicity 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+           
             string filePath = string.Empty;
 
-            try
+            //Check and create file explorer directory if not created yet.
+            //This is where pdf prescriptions are saved
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "prescriptions");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            //Generate a Guid to use as precription filename
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.PrescriptionFile.FileName)}";
+            filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                // Save file inside transaction
-                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "prescriptions");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.PrescriptionFile.FileName)}";
-                filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await model.PrescriptionFile.CopyToAsync(stream);
-                }
-
-                string rawText = "";
-                using (PdfReader reader = new PdfReader(filePath))
-                {
-                    for (int i = 1; i <= reader.NumberOfPages; i++)
-                    {
-                        rawText += PdfTextExtractor.GetTextFromPage(reader, i);
-                    }
-                }
-
-                var prescription = new Prescription
-                {
-                    CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    DoctorName = "Dr Thukuthela",
-                    PrescriptionDate = DateTime.UtcNow,
-                    TotalCost = 0,
-                    FilePath = $"/uploads/prescriptions/{fileName}",
-                    PrescriptionStatus = PrescriptionStatus.Pending,
-                    RawText = rawText,
-                    ShouldProcess = model.ShouldProcess
-                };
-
-                _context.Prescriptions.Add(prescription);
-                await _context.SaveChangesAsync();
-
-
-                //await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                TempData["Success"] = "Prescription uploaded successfully!";
-                return RedirectToAction("MyPrescriptions");
+                await model.PrescriptionFile.CopyToAsync(stream);
             }
-            catch (Exception ex)
+
+            string rawText = ""; //will store prescription text after reading
+
+            //use iTextSharp pdf reader to read through the pdf.
+            using (PdfReader reader = new PdfReader(filePath))
             {
-                await transaction.RollbackAsync();
-
-                // Delete file if transaction fails
-                if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
+                for (int i = 1; i <= reader.NumberOfPages; i++)
                 {
-                    System.IO.File.Delete(filePath);
+                    rawText += PdfTextExtractor.GetTextFromPage(reader, i);
                 }
-
-                ModelState.AddModelError("", $"Failed to upload prescription: {ex.Message}");
-                return ReloadView(model);
             }
+
+            //Map Prescription properties and save.
+            var prescription = new Prescription
+            {
+                CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                DoctorName = "Dr Thukuthela",
+                PrescriptionDate = DateTime.UtcNow,
+                TotalCost = 0,
+                FilePath = $"/uploads/prescriptions/{fileName}",
+                PrescriptionStatus = PrescriptionStatus.Pending,
+                RawText = rawText,
+                ShouldProcess = model.ShouldProcess
+            };
+
+            _context.Prescriptions.Add(prescription);
+            await _context.SaveChangesAsync();
+
+
+            TempData["Success"] = "Prescription uploaded successfully!";
+            return RedirectToAction("MyPrescriptions");
+
         }
 
         // GET: /Prescription/MyPrescriptions
@@ -133,6 +119,9 @@ namespace PrescribingSystem.Controllers
         {
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+
+            //Get customer prescriptions
+            //In Descending order so that latest prescription displays first
             var prescriptions = await _context.Prescriptions
                 .Where(p => p.CustomerId == customerId)
                 .OrderByDescending(p => p.PrescriptionDate)
@@ -147,6 +136,8 @@ namespace PrescribingSystem.Controllers
         {
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
 
+            //Get a Prescription with it's medication items
+            //Allows customer to view medication details including repeats
             var prescription = _context.Prescriptions
                 .Include(p => p.MedicationItems)
                 .ThenInclude(mi => mi.Medication)
@@ -155,6 +146,7 @@ namespace PrescribingSystem.Controllers
             if (prescription == null)
                 return NotFound();
 
+            //Prescription Total Cost
             // Only calculate if prescription is processed
             if (prescription.PrescriptionStatus == PrescriptionStatus.Processed)
             {
@@ -168,6 +160,7 @@ namespace PrescribingSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateShouldProcess(int prescriptionId, bool shouldProcess)
         {
+            //Find the prescription to be updated
             var prescription = await _context.Prescriptions.FindAsync(prescriptionId);
             if (prescription == null)
                 return NotFound();
@@ -177,9 +170,9 @@ namespace PrescribingSystem.Controllers
             await _context.SaveChangesAsync();
 
             // go back to details view
-            return RedirectToAction("PrescriptionDetails", new { PrescriptionId = prescriptionId });
+            return RedirectToAction("PrescriptionDetails", new { PrescriptionId = prescriptionId }); //Pass the prescriptionId back to Prescription details
         }
-
+        //Places Customers PrescriptionOrder
         public IActionResult DispenseRequest(int prescriptionId)
         {
             //Runs check for valid userId
@@ -248,32 +241,6 @@ namespace PrescribingSystem.Controllers
             return View(orders);
         }
 
-
-
-
-
-
-
-
-
-
-
-
-        private IActionResult ReloadView(PrescriptionUploadViewModel model)
-        {
-            ViewBag.Medications = _context.Medication
-                .Where(m => m.Status)
-                .Select(m => new SelectListItem
-                {
-                    Value = m.MedicationId.ToString(),
-                    Text = m.Name
-                })
-                .ToList();
-
-            return View("Upload", model);
-        }
-       
-
         public async Task<IActionResult> Download(int prescriptionId)
         {
             var prescription = await _context.Prescriptions.FindAsync(prescriptionId);
@@ -292,197 +259,3 @@ namespace PrescribingSystem.Controllers
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// GET: /Prescription/Upload
-//[HttpGet]
-//public IActionResult GetPrescription()
-//{
-//    int prescriptionId = 1014;
-//    string filePath;
-//    var prescription = _context.Prescriptions
-//        .Include(p => p.MedicationItems)
-//        .ThenInclude(mi => mi.Medication)
-//        .FirstOrDefault(p => p.PrescriptionId == prescriptionId);
-
-
-//    if (prescription == null) { return NotFound(); }
-
-//    // Save file inside transaction
-//    var prescriptionFolder = Path.Combine(_env.WebRootPath, "uploads", "Dummy Prescriptions");
-//    if (!Directory.Exists(prescriptionFolder))
-//        Directory.CreateDirectory(prescriptionFolder);
-
-//    var fileName = $"{Guid.NewGuid()}{"pdf"}";
-//    filePath = Path.Combine(prescriptionFolder, fileName);
-
-//    Document document = new Document();
-//    PdfWriter.GetInstance(document, new FileStream(filePath, FileMode.Create));
-//    document.Open();
-
-//    // Add prescription details to PDF
-//    document.Add(new Paragraph("Prescription: 1014"));
-//    document.Add(new Paragraph($"Patient ID: {patientId}"));
-//    document.Add(new Paragraph($"Date: {date}"));
-//    document.Add(new Paragraph($"Doctor: {doctor}"));
-//    document.Add(new Paragraph("Medications:"));
-
-//    return View();
-//}
-
-
-//// GET: /Prescription/Upload
-//[HttpGet]
-//public IActionResult Upload()
-//{
-
-
-//    var viewmodel = new PrescriptionUploadViewModel
-//    {
-//        Medications = new List<MedicationLineViewModel>()
-//    };
-
-//    ViewBag.Medications = _context.Medication
-//        .Where(m => m.Status) // active only
-//        .Select(m => new SelectListItem
-//        {
-//            Value = m.MedicationId.ToString(),
-//            Text = m.Name
-//        })
-//        .ToList();
-
-//    //var medications = _context.Medication
-//    //   .ToList();
-
-//    return View(viewmodel);
-
-//}
-
-//// POST: /Prescription/Upload
-//[HttpPost]
-//[ValidateAntiForgeryToken]
-//public async Task<IActionResult> Upload(PrescriptionUploadViewModel model)
-//{
-//    if (!ModelState.IsValid)
-//    {
-//        ViewBag.Medications = _context.Medication
-//            .Where(m => m.Status)
-//            .Select(m => new SelectListItem
-//            {
-//                Value = m.MedicationId.ToString(),
-//                Text = m.Name
-//            })
-//            .ToList();
-
-//        return View(model);
-//    }
-
-//    // Validate file
-//    if (model.PrescriptionFile == null || model.PrescriptionFile.Length == 0)
-//    {
-//        ModelState.AddModelError("", "Please select a PDF file to upload.");
-//        return ReloadView(model);
-//    }
-
-//    if (Path.GetExtension(model.PrescriptionFile.FileName).ToLower() != ".pdf")
-//    {
-//        ModelState.AddModelError("", "Only PDF files are allowed.");
-//        return ReloadView(model);
-//    }
-
-//    if (model.PrescriptionFile.Length > 10 * 1024 * 1024)
-//    {
-//        ModelState.AddModelError("", "File size must be less than 10MB.");
-//        return ReloadView(model);
-//    }
-
-//    // Start transaction for atomicity 
-//    using var transaction = await _context.Database.BeginTransactionAsync();
-//    string filePath = string.Empty;
-
-//    try
-//    {
-//        // Save file inside transaction
-//        var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "prescriptions");
-//        if (!Directory.Exists(uploadsFolder))
-//            Directory.CreateDirectory(uploadsFolder);
-
-//        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.PrescriptionFile.FileName)}";
-//        filePath = Path.Combine(uploadsFolder, fileName);
-
-//        using (var stream = new FileStream(filePath, FileMode.Create))
-//        {
-//            await model.PrescriptionFile.CopyToAsync(stream);
-//        }
-
-//        var prescription = new Prescription
-//        {
-//            CustomerId = "8a43dadf-0a54-4703-b40b-c55784374498", // TODO: Replace with logged-in user later
-//            DoctorName = model.DoctorName,
-//            DateIssued = DateTime.Now,
-//            //TotalRepeats = model.TotalRepeats,
-//            //RemainingRepeats = model.TotalRepeats,
-//            TotalCost = model.Medications?.Sum(m => m.Price * m.Quantity) ?? 0,
-//            FilePath = $"/uploads/prescriptions/{fileName}",
-//            PrescriptionStatus = PrescriptionStatus.Pending
-//        };
-
-//        _context.Prescriptions.Add(prescription);
-//        await _context.SaveChangesAsync();
-
-//        if (model.Medications == null || !model.Medications.Any())
-//            throw new InvalidOperationException("A prescription must contain at least one medication.");
-
-//        foreach (var med in model.Medications)
-//        {
-//            var medicationItem = new MedicationItem
-//            {
-//                PrescriptionId = prescription.PrescriptionId,
-//                MedicationId = med.MedicationId,
-//                Dosage = med.Dosage,
-//                Quantity = med.Quantity,
-//                //Price = med.Price
-//            };
-//            _context.MedicationItems.Add(medicationItem);
-//        }
-
-//        await _context.SaveChangesAsync();
-//        await transaction.CommitAsync();
-
-//        TempData["Success"] = "Prescription uploaded successfully!";
-//        return RedirectToAction("MyPrescriptions");
-//    }
-//    catch (Exception ex)
-//    {
-//        await transaction.RollbackAsync();
-
-//        // Delete file if transaction fails
-//        if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
-//        {
-//            System.IO.File.Delete(filePath);
-//        }
-
-//        ModelState.AddModelError("", $"Failed to upload prescription: {ex.Message}");
-//        return ReloadView(model);
-//    }
-//}
