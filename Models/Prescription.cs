@@ -14,8 +14,7 @@ namespace PrescribingSystem.Models
 
         [ForeignKey(nameof(CustomerId))]
         public ApplicationUser Customer { get; set; }   // Navigation property
-
-        [Required]
+       
         public string DoctorName { get; set; }
 
         public DateTime PrescriptionDate { get; set; }
