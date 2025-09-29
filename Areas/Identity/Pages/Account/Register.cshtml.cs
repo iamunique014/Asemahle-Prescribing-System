@@ -93,16 +93,16 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
             //[ValidateNever]
             //public IEnumerable<SelectListItem> RoleList { get; set; }
 
-            //[Required]
-            //[StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-            //[DataType(DataType.Password)]
-            //[Display(Name = "Password")]
-            //public string Password { get; set; }
+            [Required]
+            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+            [DataType(DataType.Password)]
+            [Display(Name = "Password")]
+            public string Password { get; set; }
 
-            //[DataType(DataType.Password)]
-            //[Display(Name = "Confirm password")]
-            //[Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-            //public string ConfirmPassword { get; set; }
+            [DataType(DataType.Password)]
+            [Display(Name = "Confirm password")]
+            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+            public string ConfirmPassword { get; set; }
         }
 
 
@@ -125,7 +125,7 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            string generatedPassword = GeneratePassword();
+            //string generatedPassword = GeneratePassword();
 
             var user = new ApplicationUser
             {
@@ -137,7 +137,8 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
                 IdentityNumber = Input.IdentityNumber
             };
 
-            var result = await _userManager.CreateAsync(user, "Tester@1234");
+            //var result = await _userManager.CreateAsync(user, "Tester@1234");
+            var result = await _userManager.CreateAsync(user, Input.Password);
             if (result.Succeeded)
             {
                 // Add FirstName and LastName as claims
@@ -179,36 +180,36 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
         }
 
         //Improved Mthod to ensure all password requirements are met.
-        private string GeneratePassword(int length = 12)
-        {
-            const string lowercase = "abcdefghijklmnopqrstuvwxyz";
-            const string uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            const string numbers = "0123456789";
-            const string specialChars = "!@#$%&^*()_+";
+        //private string GeneratePassword(int length = 12)
+        //{
+        //    const string lowercase = "abcdefghijklmnopqrstuvwxyz";
+        //    const string uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        //    const string numbers = "0123456789";
+        //    const string specialChars = "!@#$%&^*()_+";
 
-            var allChars = lowercase + uppercase + numbers + specialChars;
-            var random = new Random();
+        //    var allChars = lowercase + uppercase + numbers + specialChars;
+        //    var random = new Random();
 
-            //Ensure at least one of each character type
-            var password = new Char[]
-            {
-                lowercase[random.Next(lowercase.Length)],
-                uppercase[random.Next(uppercase.Length)],
-                numbers[random.Next(numbers.Length)],
-                specialChars[random.Next(specialChars.Length)]
-            };
+        //    //Ensure at least one of each character type
+        //    var password = new Char[]
+        //    {
+        //        lowercase[random.Next(lowercase.Length)],
+        //        uppercase[random.Next(uppercase.Length)],
+        //        numbers[random.Next(numbers.Length)],
+        //        specialChars[random.Next(specialChars.Length)]
+        //    };
 
-            //Fill the rest of the  password length
-            for (int i = 7; i < length; i++) 
-            {
-                password = password.Append(allChars[random.Next(allChars.Length)]).ToArray();
-            }
+        //    //Fill the rest of the  password length
+        //    for (int i = 7; i < length; i++) 
+        //    {
+        //        password = password.Append(allChars[random.Next(allChars.Length)]).ToArray();
+        //    }
 
-            //
-            return "IBP" + new string(password.OrderBy(x => random.Next()).ToArray());
+        //    //
+        //    return "IBP" + new string(password.OrderBy(x => random.Next()).ToArray());
             
-            // return $"IBP{Guid.NewGuid().ToString().Substring(0, 9)}!";
-        }
+        //    // return $"IBP{Guid.NewGuid().ToString().Substring(0, 9)}!";
+        //}
 
         public async Task<IActionResult> OnGetConfirmEmailAsync(string userId, string code)
         {

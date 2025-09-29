@@ -15,7 +15,7 @@ using Path = System.IO.Path;
 namespace PrescribingSystem.Controllers
 {
     //[Authorize(Roles = "Customer")]
-    //[Authorize]
+    [Authorize]
     public class PrescriptionController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -7,12 +7,12 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SiphoAuth.Controllers
 {
-    public class AccountController : Controller
+    public class AccountMphoController : Controller
     {
         private readonly SignInManager<ApplicationUser> signInManager;
         private readonly UserManager<ApplicationUser> userManager;
 
-        public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+        public AccountMphoController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
