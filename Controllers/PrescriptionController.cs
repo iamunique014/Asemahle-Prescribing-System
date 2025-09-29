@@ -15,6 +15,7 @@ using Path = System.IO.Path;
 namespace PrescribingSystem.Controllers
 {
     //[Authorize(Roles = "Customer")]
+    //[Authorize]
     public class PrescriptionController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -25,9 +26,10 @@ namespace PrescribingSystem.Controllers
             _context = context;
             _env = env;
         }
-
+        
         // GET: /Prescription/Upload
         [HttpGet]
+        [Authorize]
         public IActionResult Upload()
         {
             return View();
@@ -96,7 +98,7 @@ namespace PrescribingSystem.Controllers
             var prescription = new Prescription
             {
                 CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                DoctorName = "Dr Thukuthela",
+                //DoctorName = "Dr Thukuthela",
                 PrescriptionDate = DateTime.UtcNow,
                 TotalCost = 0,
                 FilePath = $"/uploads/prescriptions/{fileName}",
@@ -231,7 +233,7 @@ namespace PrescribingSystem.Controllers
 
             if (string.IsNullOrEmpty(customerId))
             {
-                // User not logged in → redirect to login
+                // User not logged in redirect to login
                 return RedirectToPage("/Account/Login");
             }
 
