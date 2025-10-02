@@ -2,14 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,12 +11,21 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PrescribingSystem.Data;
+using PrescribingSystem.Models;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
-using PrescribingSystem.Models;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Threading;
+using System.Threading.Tasks;
 
 
 namespace PrescribingSystem.Areas.Identity.Pages.Account
@@ -83,9 +84,19 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
             //[Required]
             //[Display(Name = "Health Council Registration Number")]
             //public string HealthCouncilRegistrationNumber { get; set; }
+
             [Required]
+            [StringLength(13, MinimumLength = 13, ErrorMessage = "SA ID Number must be exactly 13 digits.")]
+            [RegularExpression(@"^\d{13}$", ErrorMessage = "SA ID Number must contain only digits.")]
             [Display(Name = "Identity Number")]
             public string IdentityNumber { get; set; }
+
+            [Required]
+            [Phone]
+            [Display(Name = "Cellphone Number")]
+            [RegularExpression(@"^(?:\+27|0)[6-8][0-9]{8}$", ErrorMessage = "Please enter a valid South African phone number.")]
+            public string CellphoneNumber { get; set; }
+
             //[Required]
             //[Display(Name = "Role")]
             //public string Role { get; set; }
@@ -134,8 +145,19 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
                 FirstName = Input.FirstName,
                 LastName = Input.LastName,
                 //HealthCouncilRegistrationNumber = Input.HealthCouncilRegistrationNumber,
-                IdentityNumber = Input.IdentityNumber
+                IdentityNumber = Input.IdentityNumber,
+                CellphoneNumber = Input.CellphoneNumber
             };
+
+            //Check if a user with the same IdentityNumber already exists
+            var existingUser = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.IdentityNumber == Input.IdentityNumber);
+
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Input.IdentityNumber", "This SA ID Number is already registered.");
+                return Page();
+            }
 
             //var result = await _userManager.CreateAsync(user, "Tester@1234");
             var result = await _userManager.CreateAsync(user, Input.Password);
