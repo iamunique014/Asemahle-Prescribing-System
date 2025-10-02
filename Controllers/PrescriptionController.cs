@@ -14,7 +14,6 @@ using Path = System.IO.Path;
 
 namespace PrescribingSystem.Controllers
 {
-    //[Authorize(Roles = "Customer")]
     [Authorize]
     public class PrescriptionController : Controller
     {
@@ -29,14 +28,14 @@ namespace PrescribingSystem.Controllers
         
         // GET: /Prescription/Upload
         [HttpGet]
-        [Authorize]
+        //[Authorize]
         public IActionResult Upload()
         {
             return View();
         }
 
         //POST: /Prescription/Upload
-        [Authorize]
+        //[Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload(PrescriptionUploadViewModel model)
