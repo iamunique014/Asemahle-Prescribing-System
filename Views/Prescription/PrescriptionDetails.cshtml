@@ -25,7 +25,10 @@
 
     <div class="prescription-details bg-light rounded p-2 mb-3">
         <h3>Date: @Model.PrescriptionDate.ToString("dddd, dd, MMMM, HH:mm")</h3>
-        <h3>Doctor: @Model.DoctorName</h3>
+        @if(Model.PrescriptionStatus != PrescriptionStatus.Pending)
+        {
+            <h3>Doctor: @Model.DoctorName</h3>
+        }
         <h3>Status: @Enum.GetName(typeof(PrescriptionStatus), Model.PrescriptionStatus)</h3>
         <h3>Total Cost: R @Model.TotalCost</h3>
     </div>
