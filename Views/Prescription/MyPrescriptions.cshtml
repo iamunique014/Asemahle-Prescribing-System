@@ -135,6 +135,10 @@
                                            class="btn btn-success">
                                             Open
                                         </a>
+                                        <a href="@Url.Action("DeletePrescription", "Prescription", new { prescriptionId = prescription.PrescriptionId })"
+                                           class="btn btn-danger">
+                                            Delete
+                                        </a>
                                     </td>
                                 </tr>
                             }
