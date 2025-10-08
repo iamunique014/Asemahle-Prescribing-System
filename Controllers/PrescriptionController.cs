@@ -97,7 +97,6 @@ namespace PrescribingSystem.Controllers
             var prescription = new Prescription
             {
                 CustomerId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                //DoctorName = "Dr Thukuthela",
                 PrescriptionDate = DateTime.UtcNow,
                 TotalCost = 0,
                 FilePath = $"/uploads/prescriptions/{fileName}",
@@ -171,7 +170,7 @@ namespace PrescribingSystem.Controllers
             await _context.SaveChangesAsync();
 
             // go back to details view
-            return RedirectToAction("PrescriptionDetails", new { PrescriptionId = prescriptionId }); //Pass the prescriptionId back to Prescription details
+            return RedirectToAction("MyPrescriptions"); 
         }
         //Places Customers PrescriptionOrder
         public IActionResult DispenseRequest(int prescriptionId)
@@ -184,7 +183,7 @@ namespace PrescribingSystem.Controllers
                 // User not logged in → redirect to login
                 return RedirectToPage("/Account/Login");
             }
-
+                                                        
             //Getting prescription details so i can determine if remainingrepeats
             var prescription = _context.Prescriptions
                 .Include(p => p.MedicationItems)
