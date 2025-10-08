@@ -27,6 +27,7 @@ namespace PrescribingSystem.Models
 
         // NEW FIELD: customer decides if pharmacist should process
         public bool ShouldProcess { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
 
         public PrescriptionStatus PrescriptionStatus { get; set; } = PrescriptionStatus.Pending;
 

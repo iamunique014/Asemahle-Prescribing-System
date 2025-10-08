@@ -73,6 +73,10 @@ namespace PrescribingSystem.Data
                    .WithMany()  // Medication itself is a catalog; doesn't need navigation back
                    .HasForeignKey(mi => mi.MedicationId)
                    .OnDelete(DeleteBehavior.Restrict); // Prevent deleting Medication if used in prescription
+
+            builder.Entity<Prescription>()
+                .Property(p => p.IsDeleted)
+                .HasDefaultValue(false);
         }
     }
 }
