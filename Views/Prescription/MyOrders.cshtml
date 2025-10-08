@@ -34,7 +34,7 @@
                 {
                     <tr>
                         <td>@order.OrderDate.ToString("dddd, dd, MMMM, HH:mm")</td>
-                        <td>@order.PrescriptionId</td>
+                     @*    <td>@order.PrescriptionId</td> *@
                         <td>@Enum.GetName(typeof(OrderStatus), order.OrderStatus)</td>
                         <td>
                             <a href="@Url.Action("DeleteOrder", "Prescription", new { orderId = order.PrescriptionOrdersId })"
