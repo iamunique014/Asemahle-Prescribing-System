@@ -73,7 +73,7 @@
                                     </td>
                                     <td>@order.TotalCost.ToString("c")</td>
                                     <td>
-                                        <a href="@Url.Action("OrderDetails", "CustomerOrders", new { orderId = order.PrescriptionOrdersId })"
+                                        <a href="@Url.Action("CustomerOrderDetails", "CustomerOrders", new { PrescriptionOrdersId  = order.PrescriptionOrdersId })"
                                            class="btn btn-success">
                                             Open
                                         </a>
@@ -118,7 +118,7 @@
                                     </td>
                                    <td>@order.TotalCost.ToString("c")</td>
                                     <td>
-                                        <a href="@Url.Action("OrderDetails", "CustomerOrders", new { PrescriptionOrdersId = order.PrescriptionOrdersId })"
+                                        <a href="@Url.Action("CustomerOrderDetails", "CustomerOrders", new { PrescriptionOrdersId = order.PrescriptionOrdersId })"
                                            class="btn btn-success">
                                             Open
                                         </a>
