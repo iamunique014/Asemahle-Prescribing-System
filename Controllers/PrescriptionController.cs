@@ -123,7 +123,7 @@ namespace PrescribingSystem.Controllers
             //Get customer prescriptions
             //In Descending order so that latest prescription displays first
             var prescriptions = await _context.Prescriptions
-                .Where(p => p.CustomerId == customerId)
+                .Where(p => p.CustomerId == customerId && p.IsDeleted == false)
                 .OrderByDescending(p => p.PrescriptionDate)
                 .ToListAsync();
 
@@ -240,6 +240,29 @@ namespace PrescribingSystem.Controllers
 
             return View(orders);
         }
+
+        public async Task<IActionResult> DeletePrescription(int prescriptionId)
+        {
+            string customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(customerId))
+            {
+                // User not logged in redirect to login
+                return RedirectToPage("/Account/Login");
+            }
+
+            var prescription = await _context.Prescriptions.FindAsync(prescriptionId);
+
+            if (prescription == null)
+                return NotFound();
+
+            prescription.IsDeleted = true;
+            _context.Update(prescription);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("MyPrescriptions");
+        }
+
 
         public async Task<IActionResult> Download(int prescriptionId)
         {
