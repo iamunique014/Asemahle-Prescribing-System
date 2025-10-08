@@ -172,58 +172,58 @@ namespace PrescribingSystem.Controllers
             // go back to details view
             return RedirectToAction("MyPrescriptions"); 
         }
-        //Places Customers PrescriptionOrder
-        public IActionResult DispenseRequest(int prescriptionId)
-        {
-            //Runs check for valid userId
-            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        ////Places Customers PrescriptionOrder
+        //public IActionResult DispenseRequest(int prescriptionId)
+        //{
+        //    //Runs check for valid userId
+        //    var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrEmpty(customerId))
-            {
-                // User not logged in → redirect to login
-                return RedirectToPage("/Account/Login");
-            }
+        //    if (string.IsNullOrEmpty(customerId))
+        //    {
+        //        // User not logged in → redirect to login
+        //        return RedirectToPage("/Account/Login");
+        //    }
                                                         
-            //Getting prescription details so i can determine if remainingrepeats
-            var prescription = _context.Prescriptions
-                .Include(p => p.MedicationItems)
-                .FirstOrDefault(p => p.PrescriptionId == prescriptionId && p.CustomerId == customerId);
+        //    //Getting prescription details so i can determine if remainingrepeats
+        //    var prescription = _context.Prescriptions
+        //        .Include(p => p.MedicationItems)
+        //        .FirstOrDefault(p => p.PrescriptionId == prescriptionId && p.CustomerId == customerId);
 
-            if (prescription == null)
-            {
-                return NotFound();
-            }
+        //    if (prescription == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            // Allow request only if at least one item still has repeats left
-            if (!prescription.MedicationItems.Any(mi => mi.RemainingRepeats > 0))
-            {
-                TempData["ErrorMessage"] = "You have no repeats left for this prescription.";
-                return RedirectToAction("PrescriptionDetails", new { prescriptionId });
-            }
+        //    // Allow request only if at least one item still has repeats left
+        //    if (!prescription.MedicationItems.Any(mi => mi.RemainingRepeats > 0))
+        //    {
+        //        TempData["ErrorMessage"] = "You have no repeats left for this prescription.";
+        //        return RedirectToAction("PrescriptionDetails", new { prescriptionId });
+        //    }
 
-            var prescriptionOrder = new PrescriptionOrders
-            {
-                CustomerId = customerId,
-                PrescriptionId = prescriptionId,
-                OrderDate = DateTime.UtcNow,
-                OrderStatus = OrderStatus.Pending,
-                IsDeleted = IsDeleted.Active
-            };
+        //    var prescriptionOrder = new PrescriptionOrders
+        //    {
+        //        CustomerId = customerId,
+        //        PrescriptionId = prescriptionId,
+        //        OrderDate = DateTime.UtcNow,
+        //        OrderStatus = OrderStatus.Pending,
+        //        IsDeleted = IsDeleted.Active
+        //    };
                 
-            _context.PrescriptionOrders.Add(prescriptionOrder);
+        //    _context.PrescriptionOrders.Add(prescriptionOrder);
 
-            // Decrease RemainingRepeats only for items that still have repeats
-            foreach (var item in prescription.MedicationItems.Where(mi => mi.RemainingRepeats > 0))
-            {
-                item.RemainingRepeats -= 1;
-            }
+        //    // Decrease RemainingRepeats only for items that still have repeats
+        //    foreach (var item in prescription.MedicationItems.Where(mi => mi.RemainingRepeats > 0))
+        //    {
+        //        item.RemainingRepeats -= 1;
+        //    }
 
-            _context.SaveChanges();
+        //    _context.SaveChanges();
 
 
-            TempData["SuccessMessage"] = "Your dispensing request has been submitted.";
-            return RedirectToAction("MyOrders");
-        }
+        //    TempData["SuccessMessage"] = "Your dispensing request has been submitted.";
+        //    return RedirectToAction("MyOrders");
+        //}
 
         public IActionResult MyOrders()
         {
