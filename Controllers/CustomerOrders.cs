@@ -54,7 +54,7 @@ namespace PrescribingSystem.Controllers
             }
 
             if (selectedMedicationItemIds == null || !selectedMedicationItemIds.Any())
-                return RedirectToAction("Create");
+                return RedirectToAction("OrderPrescribedMedications");
 
             var items = await _context.MedicationItems
                 .Include(mi => mi.Medication)
@@ -109,6 +109,30 @@ namespace PrescribingSystem.Controllers
                 .ToListAsync();
 
             return View(orders);
+        }
+
+        // View order details
+        public async Task<IActionResult> CustomerOrderDetails(int prescriptionOrdersId)
+        {
+            string customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(customerId))
+            {
+                // User not logged in redirect to login
+                return RedirectToPage("/Account/Login");
+            }
+
+            var order = await _context.PrescriptionOrders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.MedicationItem)
+                        .ThenInclude(mi => mi.Prescription)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.MedicationItem.Medication)
+                .FirstOrDefaultAsync(o => o.PrescriptionOrdersId == prescriptionOrdersId && o.CustomerId == customerId);
+
+            if (order == null)
+                return NotFound();
+
+            return View(order);
         }
     }
 }
