@@ -8,13 +8,14 @@ namespace PrescribingSystem.Models
         [Key]
         public int PrescriptionOrdersId { get; set; }
         public string CustomerId { get; set; }
-        [Required]
-        [ForeignKey(nameof(Prescription))]
-        public int PrescriptionId { get; set; }
-        public Prescription Prescription { get; set; }
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
         public OrderStatus OrderStatus { get; set; }
-        public IsDeleted IsDeleted { get; set; }
+        public decimal TotalCost { get; set; }
+        public bool IsRepeatOrder { get; set; }
+       // public bool EmailSent { get; set; }
+        public DateTime? ReadyDate { get; set; }
+        public DateTime? CollectedDate { get; set; }
+        public ICollection<OrderItem> OrderItems { get; set; }
     }
     public enum OrderStatus
     {
@@ -23,10 +24,5 @@ namespace PrescribingSystem.Models
         ReadyForCollection,
         Rejected,
         Collected
-    }
-    public enum IsDeleted
-    {
-        Active,
-        Deleted
     }
 }
