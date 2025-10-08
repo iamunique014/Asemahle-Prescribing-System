@@ -35,6 +35,7 @@ namespace PrescribingSystem.Data
         public DbSet<Prescription> Prescriptions { get; set; }
         public DbSet<MedicationItem> MedicationItems { get; set; }
         public DbSet<PrescriptionOrders> PrescriptionOrders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -77,6 +78,12 @@ namespace PrescribingSystem.Data
             builder.Entity<Prescription>()
                 .Property(p => p.IsDeleted)
                 .HasDefaultValue(false);
+
+            builder.Entity<PrescriptionOrders>()
+                .HasMany(o => o.OrderItems)
+                .WithOne(oi => oi.PrescriptionOrders)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
