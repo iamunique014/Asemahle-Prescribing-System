@@ -43,7 +43,7 @@ namespace PrescribingSystem.Controllers
             return View(prescribedMedication);
         }
         [HttpPost]
-        public async Task<IActionResult> Create(List<int> selectedMedicationItemIds)
+        public async Task<IActionResult> CreateCustomerOrder(List<int> selectedMedicationItemIds)
         {
             string customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
