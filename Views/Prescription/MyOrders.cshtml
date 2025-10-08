@@ -14,7 +14,8 @@
     @if (!Model.Any())
     {
         <div class="alert alert-info">
-            You have not uploaded any prescriptions yet.
+            You have not placed any orders yet. 
+            <a asp-controller="CustomerOrders" asp-action="OrderPrescribedMedication" class="btn btn-light w-40" style="color:black;">Place an Order</a>
         </div>
     }
     else
