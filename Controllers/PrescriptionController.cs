@@ -48,19 +48,19 @@ namespace PrescribingSystem.Controllers
             // Validate file
             if (model.PrescriptionFile == null || model.PrescriptionFile.Length == 0)
             {
-                ModelState.AddModelError("", "Please select a PDF file to upload.");
+                ModelState.AddModelError("PrescriptionFile", "Please select a PDF file to upload.");              
                 return View(model);
             }
 
             if (Path.GetExtension(model.PrescriptionFile.FileName).ToLower() != ".pdf")
             {
-                ModelState.AddModelError("", "Only PDF files are allowed.");
+                ModelState.AddModelError("PrescriptionFile", "Only PDF files are allowed.");
                 return View(model);
             }
 
             if (model.PrescriptionFile.Length > 10 * 1024 * 1024)
             {
-                ModelState.AddModelError("", "File size must be less than 10MB.");
+                ModelState.AddModelError("PrescriptionFile", "File size must be less than 10MB.");
                 return View(model);
             }
 
@@ -109,7 +109,7 @@ namespace PrescribingSystem.Controllers
             await _context.SaveChangesAsync();
 
 
-            TempData["Success"] = "Prescription uploaded successfully!";
+            TempData["SuccessMessage"] = "Prescription uploaded successfully!";
             return RedirectToAction("MyPrescriptions");
 
         }
@@ -157,73 +157,98 @@ namespace PrescribingSystem.Controllers
             return View(prescription);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> UpdateShouldProcess(int prescriptionId, bool shouldProcess)
+        // GET: /Prescription/EditPrescription/{prescriptionId}
+        [HttpGet]
+        public IActionResult EditPrescription(int prescriptionId)
         {
-            //Find the prescription to be updated
-            var prescription = await _context.Prescriptions.FindAsync(prescriptionId);
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var prescription = _context.Prescriptions
+                .FirstOrDefault(p => p.CustomerId == customerId && p.PrescriptionId == prescriptionId);
+
             if (prescription == null)
                 return NotFound();
 
-            prescription.ShouldProcess = shouldProcess;
-            _context.Update(prescription);
+            // Map existing prescription to view model
+            var model = new PrescriptionUploadViewModel
+            {
+                PrescriptionId = prescription.PrescriptionId,
+                ShouldProcess = prescription.ShouldProcess,
+                ExistingFilePath = prescription.FilePath
+            };
+
+            return View(model);
+        }
+
+        // POST: /Prescription/EditPrescription
+        [HttpPost]
+        public async Task<IActionResult> EditPrescription(PrescriptionUploadViewModel model)
+        {
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var prescription = _context.Prescriptions
+                .FirstOrDefault(p => p.CustomerId == customerId && p.PrescriptionId == model.PrescriptionId);
+
+            if (prescription == null)
+                return NotFound();
+
+            // Handle file upload if a new file was selected
+            if (model.PrescriptionFile != null && model.PrescriptionFile.Length > 0)
+            {
+                // Validate file type and size
+                if (Path.GetExtension(model.PrescriptionFile.FileName).ToLower() != ".pdf")
+                {
+                    ModelState.AddModelError("PrescriptionFile", "Only PDF files are allowed.");
+                    return View(model);
+                }
+
+                if (model.PrescriptionFile.Length > 10 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("PrescriptionFile", "File size must be less than 10MB.");
+                    return View(model);
+                }
+
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "prescriptions");
+                if (!Directory.Exists(uploadsFolder)) // Ensure folder exists
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"{Guid.NewGuid()}.pdf";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.PrescriptionFile.CopyToAsync(stream);
+                }
+
+                // Read text from PDF
+                string rawText = "";
+                using (var reader = new PdfReader(filePath))
+                {
+                    for (int i = 1; i <= reader.NumberOfPages; i++)
+                    {
+                        rawText += PdfTextExtractor.GetTextFromPage(reader, i);
+                    }
+                }
+
+                // Update file details
+                prescription.FilePath = $"/uploads/prescriptions/{fileName}";
+                prescription.RawText = rawText;
+            }
+
+            // Update other editable fields
+            prescription.ShouldProcess = model.ShouldProcess;
+            prescription.PrescriptionDate = DateTime.UtcNow; // optional if you want to track update time
+            prescription.PrescriptionStatus = PrescriptionStatus.Pending;
+
+            _context.Prescriptions.Update(prescription);
             await _context.SaveChangesAsync();
 
-            // go back to details view
-            return RedirectToAction("MyPrescriptions"); 
+            TempData["SuccessMessage"] = "Prescription updated successfully!";
+            return RedirectToAction("MyPrescriptions");
         }
-        ////Places Customers PrescriptionOrder
-        //public IActionResult DispenseRequest(int prescriptionId)
-        //{
-        //    //Runs check for valid userId
-        //    var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        //    if (string.IsNullOrEmpty(customerId))
-        //    {
-        //        // User not logged in → redirect to login
-        //        return RedirectToPage("/Account/Login");
-        //    }
-                                                        
-        //    //Getting prescription details so i can determine if remainingrepeats
-        //    var prescription = _context.Prescriptions
-        //        .Include(p => p.MedicationItems)
-        //        .FirstOrDefault(p => p.PrescriptionId == prescriptionId && p.CustomerId == customerId);
-
-        //    if (prescription == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    // Allow request only if at least one item still has repeats left
-        //    if (!prescription.MedicationItems.Any(mi => mi.RemainingRepeats > 0))
-        //    {
-        //        TempData["ErrorMessage"] = "You have no repeats left for this prescription.";
-        //        return RedirectToAction("PrescriptionDetails", new { prescriptionId });
-        //    }
-
-        //    var prescriptionOrder = new PrescriptionOrders
-        //    {
-        //        CustomerId = customerId,
-        //        PrescriptionId = prescriptionId,
-        //        OrderDate = DateTime.UtcNow,
-        //        OrderStatus = OrderStatus.Pending,
-        //        IsDeleted = IsDeleted.Active
-        //    };
-                
-        //    _context.PrescriptionOrders.Add(prescriptionOrder);
-
-        //    // Decrease RemainingRepeats only for items that still have repeats
-        //    foreach (var item in prescription.MedicationItems.Where(mi => mi.RemainingRepeats > 0))
-        //    {
-        //        item.RemainingRepeats -= 1;
-        //    }
-
-        //    _context.SaveChanges();
-
-
-        //    TempData["SuccessMessage"] = "Your dispensing request has been submitted.";
-        //    return RedirectToAction("MyOrders");
-        //}
 
         public IActionResult MyOrders()
         {
