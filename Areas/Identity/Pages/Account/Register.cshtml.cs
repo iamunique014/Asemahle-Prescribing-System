@@ -169,6 +169,8 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
 
 
                 await _userManager.AddToRoleAsync(user, "Customer");
+                await _signInManager.SignInAsync(user, isPersistent: false);
+
 
                 return RedirectToAction("AddCustomerAllergies", "Customer", new { id = user.Id });
 
