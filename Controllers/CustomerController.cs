@@ -136,5 +136,28 @@ namespace PrescribingSystem.Controllers
             TempData["Success"] = "Allergies updated successfully.";
             return RedirectToAction(nameof(ManageAllergies));
         }
+        [HttpGet]
+        public IActionResult ChangePassword() => View();
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.GetUserAsync(User);
+            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+
+            if (result.Succeeded)
+            {
+                TempData["Success"] = "Password changed successfully.";
+                return RedirectToAction("EditProfile");
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+
+            return View(model);
+        }
     }
 }
