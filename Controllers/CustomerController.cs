@@ -27,6 +27,39 @@ namespace PrescribingSystem.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> EditProfile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var model = new EditCustomerProfileViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                CellphoneNumber = user.CellphoneNumber,
+                Email = user.Email
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditProfile(EditCustomerProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.GetUserAsync(User);
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.CellphoneNumber = model.CellphoneNumber;
+
+            await _userManager.UpdateAsync(user);
+
+            TempData["Success"] = "Profile updated successfully.";
+            return RedirectToAction(nameof(EditProfile));
+        }
+
         [HttpGet]
         public IActionResult AddCustomerAllergies(string id)
         {
