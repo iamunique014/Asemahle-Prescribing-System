@@ -5,12 +5,17 @@
 }
 
 <div class="container mt-4">
-    <h2 class="mb-3">Edit Your Profile</h2>
+    <div class="">
+        <h2 class="mb-3">Edit Your Profile</h2>
+        
+    </div>
+    
 
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success">@TempData["Success"]</div>
     }
+    <a asp-action="ChangePassword" class="btn btn-light w-40 text-end mb-3" style="color:black;">Change Password</a>
 
     <form asp-action="EditProfile" method="post">
         <div class="form-group mb-3">
