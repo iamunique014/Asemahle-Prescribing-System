@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using PrescribingSystem.Data;
@@ -94,6 +95,46 @@ namespace PrescribingSystem.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction("Landing", "Landing"); // or customer dashboard
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ManageAllergies()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var allIngredients = await _context.ActiveIngredients.ToListAsync();
+            var userAllergies = await _context.UserAllergies
+                .Where(a => a.UserId == user.Id)
+                .Select(a => a.ActiveIngredientId)
+                .ToListAsync();
+
+            var model = new ManageAllergiesViewModel
+            {
+                SelectedAllergyIds = userAllergies,
+                AvailableAllergies = allIngredients.Select(ai => new SelectListItem
+                {
+                    Value = ai.ActiveIngredientId.ToString(),
+                    Text = ai.ActiveIngredientName,
+                    Selected = userAllergies.Contains(ai.ActiveIngredientId)
+                }).ToList()
+            };
+
+            return View(model);
+        }
+        [HttpPost]
+        public async Task<IActionResult> ManageAllergies(ManageAllergiesViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var existing = _context.UserAllergies.Where(a => a.UserId == user.Id);
+            _context.UserAllergies.RemoveRange(existing);
+
+            foreach (var id in model.SelectedAllergyIds)
+            {
+                _context.UserAllergies.Add(new UserAllergy { UserId = user.Id, ActiveIngredientId = id });
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Allergies updated successfully.";
+            return RedirectToAction(nameof(ManageAllergies));
         }
     }
 }
