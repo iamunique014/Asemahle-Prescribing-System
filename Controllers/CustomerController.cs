@@ -39,6 +39,7 @@ namespace PrescribingSystem.Controllers
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 CellphoneNumber = user.CellphoneNumber,
+                Address = user.Address,
                 Email = user.Email
             };
             return View(model);
