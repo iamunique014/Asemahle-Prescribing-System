@@ -4,37 +4,45 @@
     ViewData["Title"] = "Manage Allergies";
 }
 
-<div class="container mt-4">
-    <h2 class="mb-3">Manage Your Allergies</h2>
+<div class="row customer-container">
+    <div class="col-md-3 nav-buttons">
+        <partial name="_CustomerNavButtons" />
+    </div>
+    <div class="col-md-9">
+        <div class="container">
+            <h2 class="mb-3">Manage Your Allergies</h2>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
 
-    <form asp-action="ManageAllergies" method="post">
-        <div class="card p-3 shadow-sm mb-3">
-            @if (Model.AvailableAllergies.Any())
-            {
-                @foreach (var allergy in Model.AvailableAllergies)
-                {
-                    <div class="form-check mb-2">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               name="SelectedAllergyIds"
-                               value="@allergy.Value"
-                               @(allergy.Selected ? "checked" : "") />
-                        <label class="form-check-label">@allergy.Text</label>
-                    </div>
-                }
-            }
-            else
-            {
-                <p>No active ingredients available to select.</p>
-            }
+            <form asp-action="ManageAllergies" method="post">
+                <div class="card p-3 shadow-sm mb-3">
+                    @if (Model.AvailableAllergies.Any())
+                    {
+                        @foreach (var allergy in Model.AvailableAllergies)
+                        {
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="SelectedAllergyIds"
+                                       value="@allergy.Value"
+                                       @(allergy.Selected ? "checked" : "") />
+                                <label class="form-check-label">@allergy.Text</label>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>No active ingredients available to select.</p>
+                    }
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Allergies</button>
+                <a asp-controller="Landing" asp-action="Landing" class="btn btn-secondary ms-2">Back</a>
+            </form>
         </div>
-
-        <button type="submit" class="btn btn-primary">Save Allergies</button>
-        <a asp-controller="Landing" asp-action="Landing" class="btn btn-secondary ms-2">Back</a>
-    </form>
+    </div>
 </div>
+

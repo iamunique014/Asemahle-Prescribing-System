@@ -5,36 +5,24 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
+<div class="row customer-container">
+    <div class="col-md-3 nav-buttons">
+        <partial name="_CustomerNavButtons" />
+    </div>
+    <div class="col-md-9">
+        <div class="text-center">
 
-    <h3 class="display-4" style="display:flex; justify-content:center; margin-top:8%; margin-bottom:1%; font-weight:bold; font-family:'Times New Roman';">
-        Welcome to
-    </h3>
-    <h1 class="display-4" style="display:flex; justify-content:center; margin-top:1%; font-weight:bold; font-family:'Times New Roman';">
-        IBHAYI PHARMACY Customer Services
-    </h1>
+            <h3 class="display-4" style="display:flex; justify-content:center; margin-bottom:1%; font-weight:bold; font-family:'Times New Roman';">
+                Welcome to
+            </h3>
+            <h1 class="display-4" style="display:flex; justify-content:center; margin-top:1%; font-weight:bold; font-family:'Times New Roman';">
+                IBHAYI PHARMACY Customer Services
+            </h1>
 
-    <div class="row">
- 
-        <div class="row">
-            <div class="col-md-12">
-               @*  <a asp-controller="PharmacyManager" asp-action="Manager" class="btn btn-light w-40" style="color:black;">Pharmacy Manager</a>
-                <a asp-action="Prescriptions" asp-controller="Pharmacist" class="btn btn-light w-40" style="color:black;">Pharmacist</a> *@
-                <a asp-controller="Customer" asp-action="EditProfile" class="btn btn-light w-40" style="color:black;">My Profile</a>
-                <a asp-controller="Customer" asp-action="ManageAllergies" class="btn btn-light w-40" style="color:black;">Manage Allergies</a>
-                <a asp-controller="Prescription" asp-action="Upload" class="btn btn-light w-40" style="color:black;">Upload Prescription</a>
-                <a asp-controller="Prescription" asp-action="MyPrescriptions" class="btn btn-light w-40" style="color:black;">My Prescriptions</a>
-                <a asp-controller="CustomerOrders" asp-action="MyOrders" class="btn btn-light w-40" style="color:black;">My Orders</a>
-                <a asp-controller="CustomerOrders" asp-action="OrderPrescribedMedications" class="btn btn-light w-40" style="color:black;">Place Order</a>
-            </div>
-        </div> 
-
-        @*  <h3 class="display-4" style="display:flex; justify-content:center; margin-top:8%; font: bold; font-family:'Times New Roman';">
-        Welcome to
-    </h3>
-    <h1 class="display-4" style="display:flex; justify-content:center; margin-top:10%; font: bold; font-family:'Times New Roman';">IBHAYI PHARMACY</h1> *@
-
+           
+        </div>
 
     </div>
-    </div>
+</div>
+
 
