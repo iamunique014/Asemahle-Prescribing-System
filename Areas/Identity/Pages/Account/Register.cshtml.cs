@@ -97,6 +97,8 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
             [RegularExpression(@"^(?:\+27|0)[6-8][0-9]{8}$", ErrorMessage = "Please enter a valid South African phone number.")]
             public string CellphoneNumber { get; set; }
 
+            public string Address { get; set; }
+
             //[Required]
             //[Display(Name = "Role")]
             //public string Role { get; set; }
@@ -146,7 +148,8 @@ namespace PrescribingSystem.Areas.Identity.Pages.Account
                 LastName = Input.LastName,
                 //HealthCouncilRegistrationNumber = Input.HealthCouncilRegistrationNumber,
                 IdentityNumber = Input.IdentityNumber,
-                CellphoneNumber = Input.CellphoneNumber
+                CellphoneNumber = Input.CellphoneNumber,
+                Address = Input.Address
             };
 
             //Check if a user with the same IdentityNumber already exists

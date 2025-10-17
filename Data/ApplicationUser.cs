@@ -25,6 +25,7 @@ namespace PrescribingSystem.Data
         [Display(Name = "Cellphone Number")]
         [RegularExpression(@"^(?:\+27|0)[6-8][0-9]{8}$", ErrorMessage = "Please enter a valid South African phone number.")]
         public string CellphoneNumber { get; set; }
+        public string? Address { get; set; }
         public ICollection<UserAllergy> Allergies { get; set; }
 
         // Link to prescriptions
