@@ -1,41 +1,47 @@
 ﻿@using PrescribingSystem.Models.ViewModels
 @model List<AvailableMedicationViewModel>
+<div class="row customer-container">
+    <div class="col-md-3 nav-buttons">
+        <partial name="_CustomerNavButtons" />
+    </div>
+    <div class="col-md-9 ">
+        <h2>Place Order</h2>
 
-<h2>Place Order</h2>
+        <form asp-action="CreateCustomerOrder" method="post">
+            @if (Model.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Medication</th>
+                            <th>Doctor</th>
+                            <th>Quantity</th>
+                            <th>Repeats Left</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input type="checkbox" name="selectedMedicationItemIds" value="@item.MedicationItemId" /></td>
+                                <td>@item.MedicationName</td>
+                                <td>@item.DoctorName</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.RemainingRepeats</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-<form asp-action="CreateCustomerOrder" method="post">
-    @if (Model.Any())
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>Medication</th>
-                    <th>Doctor</th>
-                    <th>Quantity</th>
-                    <th>Repeats Left</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td><input type="checkbox" name="selectedMedicationItemIds" value="@item.MedicationItemId" /></td>
-                        <td>@item.MedicationName</td>
-                        <td>@item.DoctorName</td>
-                        <td>@item.Quantity</td>
-                        <td>@item.RemainingRepeats</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <button type="submit" class="btn btn-primary">Place Order</button>
-    }
-    else
-    {
-        <div class="alert alert-info">No Medications available.</div>
-    }
+                <button type="submit" class="btn btn-primary">Place Order</button>
+            }
+            else
+            {
+                <div class="alert alert-info">No Medications available.</div>
+            }
 
     
-</form>
+        </form>
+    </div>
+</div>
