@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PrescribingSystem.Data;
 
@@ -11,9 +12,11 @@ using PrescribingSystem.Data;
 namespace PrescribingSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251019111309_CreateConstraint")]
+    partial class CreateConstraint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -831,7 +834,7 @@ namespace PrescribingSystem.Migrations
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsRepeatOrder")
                         .HasColumnType("bit");
@@ -849,8 +852,6 @@ namespace PrescribingSystem.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("PrescriptionOrdersId");
-
-                    b.HasIndex("CustomerId");
 
                     b.ToTable("PrescriptionOrders");
                 });
@@ -1143,17 +1144,6 @@ namespace PrescribingSystem.Migrations
                         .WithMany("Prescriptions")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("PrescribingSystem.Models.PrescriptionOrders", b =>
-                {
-                    b.HasOne("PrescribingSystem.Data.ApplicationUser", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Customer");

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using PrescribingSystem.Data;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PrescribingSystem.Models
@@ -7,7 +8,11 @@ namespace PrescribingSystem.Models
     {
         [Key]
         public int PrescriptionOrdersId { get; set; }
-        public string CustomerId { get; set; }
+        [Required]
+        public string CustomerId { get; set; }  // Assuming Identity User Id
+
+        [ForeignKey(nameof(CustomerId))]
+        public ApplicationUser Customer { get; set; }   // Navigation property
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
         public OrderStatus OrderStatus { get; set; }
         public decimal TotalCost { get; set; }
