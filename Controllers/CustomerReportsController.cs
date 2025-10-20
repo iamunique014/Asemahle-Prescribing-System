@@ -30,7 +30,9 @@ namespace PrescribingSystem.Controllers
             // Query prescriptions joined with PrescriptionOrders and MedicationItems
             var data = await (from p in _context.Prescriptions
                               join o in _context.PrescriptionOrders
-                                  on p.PrescriptionId equals o.PrescriptionOrdersId
+                                  on p.CustomerId equals o.CustomerId
+                              join oi in _context.OrderItems
+                                on o.PrescriptionOrdersId equals oi.OrderId
                               from m in _context.MedicationItems
                                   .Where(mi => mi.PrescriptionId == p.PrescriptionId)
                               where p.CustomerId == customerId
@@ -44,7 +46,7 @@ namespace PrescribingSystem.Controllers
                                   DoctorName = p.DoctorName,
                                   MedicationName = m.Medication.Name,
                                   Quantity = m.Quantity,
-                                  TotalCost = p.TotalCost,
+                                  TotalCost = oi.LineTotal,
                                   PrescriptionDate = p.PrescriptionDate,
                                   OrderDate = o.OrderDate
                               }).ToListAsync();
