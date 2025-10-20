@@ -1,6 +1,56 @@
-﻿
+﻿@{
+    ViewData["Title"] = "Customer Report";
+}
 
-<form asp-controller="CustomerReports" asp-action="DispensedPrescriptionPdf" method="get">
+<h3>My Prescription Report</h3>
+
+<form asp-action="CustomerReport" method="post">
+    <div class="form-group">
+        <label>From Date:</label>
+        <input type="date" name="fromDate" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label>To Date:</label>
+        <input type="date" name="toDate" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label>Group By:</label>
+        <select name="groupBy" class="form-control" required>
+            <option value="Patient">Patient</option>
+            <option value="Doctor">Doctor</option>
+            <option value="Medication">Medication</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">
+        Generate PDF Report
+    </button>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* <form asp-controller="CustomerReports" asp-action="DispensedPrescriptionPdf" method="get">
     <label>From:</label>
     <input type="date" name="fromDate" required />
 
@@ -15,4 +65,4 @@
     </select>
 
     <button type="submit">Generate PDF</button>
-</form>
+</form> *@
