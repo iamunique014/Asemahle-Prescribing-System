@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PrescribingSystem.Data;
 using PrescribingSystem.Models;
+using PrescribingSystem.Services;
 
 public class Program
 {
@@ -49,6 +50,7 @@ public class Program
 
         // Developer exception filter for EF migrations
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+        builder.Services.AddScoped<CustomerReportService>();
 
         var app = builder.Build();
 
