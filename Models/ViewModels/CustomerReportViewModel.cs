@@ -15,6 +15,7 @@
         public string DoctorName { get; set; }
         public decimal TotalCost { get; set; }
         public List<CustomerMedicationVM> Medications { get; set; } = new();
+        public List<CustomerOrderVM> Orders { get; set; } = new(); // new
     }
 
     public class CustomerMedicationVM
@@ -24,5 +25,13 @@
         public int Quantity { get; set; }
         public int RemainingRepeats { get; set; }
         public int TotalRepeats { get; set; }
+    }
+    public class CustomerOrderVM
+    {
+        public DateTime OrderDate { get; set; }
+        public DateTime? ReadyDate { get; set; }
+        public DateTime? CollectedDate { get; set; }
+        public string OrderStatus { get; set; }
+        public decimal TotalCost { get; set; }
     }
 }
